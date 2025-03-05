@@ -27,10 +27,17 @@ bool Game::init(const char* title, int xpos, int ypos, int width, int height, bo
         return false;
     }
 
-    // Set renderer color (optional, for clearing the screen)
-    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255); // Black
+    //Initialize SDL_Image
+    if (!(IMG_Init(IMG_INIT_PNG) & IMG_INIT_PNG)) { // Or IMG_INIT_JPG, etc.
+        std::cerr << "SDL_image could not initialize! SDL_image Error: " << IMG_GetError() << std::endl;
+    }
+
+    // Set renderer color
+    SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255); 
 
     isRunning = true;
+    lastFrameTime = SDL_GetTicks();
+    deltaTime = 0.0f;
     return true;
 }
 
@@ -46,22 +53,24 @@ void Game::handleEvents() {
                 isRunning = false;
             }
             break;
-            // Add more event handling here (mouse clicks, other keys, etc.)
         }
     }
 }
 
+
+
 void Game::update() {
-    // Game logic goes here (e.g., moving objects, collision detection)
-    // ...
+    // Game logic
+    Uint32 currentFrameTime = SDL_GetTicks();
+    deltaTime = (currentFrameTime - lastFrameTime) / 1000.0f; // Convert to seconds
+    lastFrameTime = currentFrameTime;
 }
 
 void Game::render() {
     // Clear the screen
     SDL_RenderClear(renderer);
 
-    // Draw game objects here (using SDL_RenderCopy, SDL_RenderDrawRect, etc.)
-    // ...
+    // Draw game objects 
 
     // Update the screen
     SDL_RenderPresent(renderer);

@@ -2,6 +2,7 @@
 #define GAME_H
 
 #include <SDL.h>
+#include <SDL_image.h>
 
 class Game {
 public:
@@ -19,6 +20,8 @@ private:
     bool isRunning;
     SDL_Window* window;
     SDL_Renderer* renderer;
+    Uint32 lastFrameTime;
+    float deltaTime;
 };
 
 #endif
