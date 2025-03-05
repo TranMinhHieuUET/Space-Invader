@@ -46,10 +46,13 @@ bool Game::init(const char* title, int xpos, int ypos, int width, int height, bo
 void Game::handleEvents() {
     SDL_Event event;
     while (SDL_PollEvent(&event)) {
+        if (event.type == SDL_QUIT) {
+            isRunning = false;
+        }
         switch (currentState) {
         case GameState::MENU:
             // Handle menu input 
-            handleMenuEvents(event); 
+            handleMenuEvents(event);
             break;
         case GameState::PLAYING:
             // Handle gameplay input 
