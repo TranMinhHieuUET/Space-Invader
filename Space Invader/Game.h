@@ -6,9 +6,14 @@
 
 class Game {
 public:
+    enum class GameState {
+        MENU,
+        PLAYING,
+        PAUSE,
+        GAME_OVER
+    };
     Game();
     ~Game();
-
     bool init(const char* title, int xpos, int ypos, int width, int height, bool fullscreen);
     void handleEvents();
     void update();
@@ -22,6 +27,9 @@ private:
     SDL_Renderer* renderer;
     Uint32 lastFrameTime;
     float deltaTime;
+    GameState currentState;
+    void handleMenuEvents(const SDL_Event& event);
+    void renderGameMenu();
 };
 
 #endif
