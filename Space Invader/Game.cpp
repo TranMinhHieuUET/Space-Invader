@@ -1,6 +1,7 @@
 #include "Game.h"
 #include <iostream>
 #include "Utils.h"
+#include "Button.h"
 
 Game::Game() : isRunning(false), window(nullptr), renderer(nullptr), lastFrameTime(0), deltaTime(0.0f), currentState(GameState::MENU) {}
 
@@ -36,6 +37,9 @@ bool Game::init(const char* title, int xpos, int ypos, int width, int height, bo
     // Set renderer color
     SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255); 
 
+    // Render the start menu
+    renderStartMenu();
+
     isRunning = true;
     lastFrameTime = SDL_GetTicks();
     deltaTime = 0.0f;
@@ -52,10 +56,14 @@ void Game::handleEvents() {
         switch (currentState) {
         case GameState::MENU:
             // Handle menu input 
-            handleMenuEvents(event);
+            startButton->handleEvent(event); 
+            quitButton->handleEvent(event);  
             break;
         case GameState::PLAYING:
             // Handle gameplay input 
+            if (event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_ESCAPE) {
+                isRunning = false;
+            }
             break;
         case GameState::PAUSE:
             // Handle pause menu input
@@ -67,16 +75,28 @@ void Game::handleEvents() {
     }
 }
 
-void Game::handleMenuEvents(const SDL_Event& event) {
-    // Handle mouse click event
-    if (event.type == SDL_MOUSEBUTTONDOWN) {
-        int mouseX = event.button.x;
-        int mouseY = event.button.y;
-    }
-}
+void Game::renderStartMenu() {
+    // Get window dimensions
+    int windowWidth, windowHeight;
+    SDL_GetWindowSize(window, &windowWidth, &windowHeight);
 
-void Game::renderGameMenu() {
-    // Render the menu background, title, and buttons
+    // Button dimensions
+    int buttonWidth = 200;
+    int buttonHeight = 100;
+
+    // Spacing between buttons
+    int spacing = 50;
+
+    // Calculate button positions
+    int startButtonX = (windowWidth - buttonWidth) / 2; 
+    int startButtonY = (windowHeight / 2);
+    int quitButtonX = (windowWidth - buttonWidth) / 2; 
+    int quitButtonY = (windowHeight / 2) + buttonHeight + spacing;
+
+    // Initialize the Start button and Quit button
+    startButton = std::make_unique<Button>(startButtonX, startButtonY, buttonWidth, buttonHeight, "Resource/start_button.png", this, Button::ButtonType::START);
+    quitButton = std::make_unique<Button>(quitButtonX, quitButtonY, buttonWidth, buttonHeight, "Resource/quit_button.png", this, Button::ButtonType::QUIT);
+
 }
 
 void Game::update() {
@@ -99,13 +119,15 @@ void Game::update() {
 
 void Game::render() {
     // Clear the screen
+    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255); // Set clear color to black
     SDL_RenderClear(renderer);
 
     // Draw game objects 
     switch (currentState) {
     case GameState::MENU:
         // Render menu elements
-        renderGameMenu(); // We'll create this function later
+        startButton->render(renderer);
+        quitButton->render(renderer);
         break;
     case GameState::PLAYING:
         // Render game elements 
@@ -123,6 +145,10 @@ void Game::render() {
 }
 
 void Game::clean() {
+    // Cleanup buttons
+    startButton.reset();
+    quitButton.reset();
+
     // Destroy renderer and window
     SDL_DestroyRenderer(renderer);
     SDL_DestroyWindow(window);

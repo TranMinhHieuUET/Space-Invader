@@ -3,6 +3,11 @@
 
 #include <SDL.h>
 #include <SDL_image.h>
+#include <memory> // For std::unique_ptr
+#include "Button.h" // Include the Button class header
+#include <string>
+
+class Button;
 
 class Game {
 public:
@@ -19,7 +24,10 @@ public:
     void update();
     void render();
     void clean();
-    bool running() { return isRunning; }
+    bool running() { return isRunning; };
+    void setGameState(GameState newState) { currentState = newState; };
+    void setRunning(bool running) { isRunning = running; };
+    SDL_Renderer* getRenderer() { return renderer; }
 
 private:
     bool isRunning;
@@ -28,8 +36,9 @@ private:
     Uint32 lastFrameTime;
     float deltaTime;
     GameState currentState;
-    void handleMenuEvents(const SDL_Event& event);
-    void renderGameMenu();
+    std::unique_ptr<Button> startButton; // Correct unique_ptr usage
+    std::unique_ptr<Button> quitButton;  // Correct unique_ptr usage
+    void renderStartMenu();
 };
 
 #endif
