@@ -64,13 +64,14 @@ void Button::handleEvent(const SDL_Event& event) {
         if (isHovered && event.type == SDL_MOUSEBUTTONDOWN && event.button.button == SDL_BUTTON_LEFT) {
             switch (type) {
             case ButtonType::START:
-                std::cout << "Start button clicked!" << std::endl;
                 game->setGameState(Game::GameState::PLAYING); // Move from menu to play screen
                 break;
             case ButtonType::QUIT:
-                std::cout << "Quit button clicked!" << std::endl;
                 game->setRunning(false); // Quit the game
                 break;
+            case ButtonType::GO_TO_MENU:
+                std::cout << "Go to menu";
+                game->setGameState(Game::GameState::MENU); // Move from pause to menu
             }
         }
     }

@@ -36,9 +36,10 @@ private:
     Uint32 lastFrameTime;
     float deltaTime;
     GameState currentState;
-    std::unique_ptr<Button> startButton; // Correct unique_ptr usage
-    std::unique_ptr<Button> quitButton;  // Correct unique_ptr usage
-    void renderStartMenu();
+    std::unique_ptr<Button> startButton; // Declare startButton as a unique_ptr
+    std::unique_ptr<Button> quitButton;  // Declare quitButton as a unique_ptr
+    std::unique_ptr<Button> goToMenuButton;  // Declare goToMenuButton as a unique_ptr
+    void renderButton();
 };
 
 #endif

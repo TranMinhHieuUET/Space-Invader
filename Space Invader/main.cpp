@@ -5,7 +5,7 @@
 int main(int argc, char* argv[]) {
     Game game;
 
-    if (!game.init("Space Invader", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 1000, 980, false)) {
+    if (!game.init("Space Invader", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 1710, 980, false)) {
         std::cerr << "Failed to initialize game!" << std::endl;
         return 1;
     }

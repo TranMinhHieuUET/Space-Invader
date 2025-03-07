@@ -3,6 +3,13 @@
 #include "Utils.h"
 #include "Button.h"
 
+// Button dimensions
+static int buttonWidth = 200;
+static int buttonHeight = 100;
+
+// Spacing between buttons
+static int spacing = 50;
+
 Game::Game() : isRunning(false), window(nullptr), renderer(nullptr), lastFrameTime(0), deltaTime(0.0f), currentState(GameState::MENU) {}
 
 Game::~Game() {}
@@ -38,7 +45,7 @@ bool Game::init(const char* title, int xpos, int ypos, int width, int height, bo
     SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255); 
 
     // Render the start menu
-    renderStartMenu();
+    renderButton();
 
     isRunning = true;
     lastFrameTime = SDL_GetTicks();
@@ -67,6 +74,7 @@ void Game::handleEvents() {
             break;
         case GameState::PAUSE:
             // Handle pause menu input
+            goToMenuButton->handleEvent(event);
             break;
         case GameState::GAME_OVER:
             // Handle game over input 
@@ -75,27 +83,23 @@ void Game::handleEvents() {
     }
 }
 
-void Game::renderStartMenu() {
+void Game::renderButton() {
     // Get window dimensions
     int windowWidth, windowHeight;
     SDL_GetWindowSize(window, &windowWidth, &windowHeight);
-
-    // Button dimensions
-    int buttonWidth = 200;
-    int buttonHeight = 100;
-
-    // Spacing between buttons
-    int spacing = 50;
 
     // Calculate button positions
     int startButtonX = (windowWidth - buttonWidth) / 2; 
     int startButtonY = (windowHeight / 2);
     int quitButtonX = (windowWidth - buttonWidth) / 2; 
     int quitButtonY = (windowHeight / 2) + buttonHeight + spacing;
+    int goToMenuButtonX = (windowWidth - buttonWidth) / 2;
+    int goToMenuButtonY = (windowHeight / 2);
 
     // Initialize the Start button and Quit button
     startButton = std::make_unique<Button>(startButtonX, startButtonY, buttonWidth, buttonHeight, "Resource/start_button.png", this, Button::ButtonType::START);
     quitButton = std::make_unique<Button>(quitButtonX, quitButtonY, buttonWidth, buttonHeight, "Resource/quit_button.png", this, Button::ButtonType::QUIT);
+    goToMenuButton = std::make_unique<Button>(goToMenuButtonX, goToMenuButtonY, buttonWidth, buttonHeight, "Resource/go_to_menu_button.png", this, Button::ButtonType::GO_TO_MENU);
 
 }
 
@@ -134,6 +138,7 @@ void Game::render() {
         break;
     case GameState::PAUSE:
         // Render pause menu
+        goToMenuButton->render(renderer);
         break;
     case GameState::GAME_OVER:
         // Render game over screen elements
