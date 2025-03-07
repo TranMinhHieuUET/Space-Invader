@@ -3,12 +3,18 @@
 
 #include <SDL.h>
 #include <SDL_image.h>
-#include <memory> // For std::unique_ptr
-#include "Button.h" // Include the Button class header
 #include <string>
-#include "Player.h"
 
 class Button;
+class Player;
+class Background;
+class Alien;
+
+#include "Player.h"
+#include "Background.h"
+#include "Button.h" 
+#include "Alien.h"
+#include "AlienSwarm.h"
 
 class Game {
 public:
@@ -38,9 +44,11 @@ private:
     float deltaTime;
     GameState currentState;
     Button* startButton = nullptr; 
-    Button* quitButton = nullptr; 
+    Button* quitButton = nullptr;
     Button* goToMenuButton = nullptr; 
-    Player* player = nullptr;  
+    Player* player = nullptr;
+    Background* startBackground = nullptr;
+    AlienSwarm* alienSwarm = nullptr;
     void initializeAll();
 };
 

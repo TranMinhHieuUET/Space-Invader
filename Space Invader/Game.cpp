@@ -3,10 +3,12 @@
 #include "Utils.h"
 #include "Button.h"
 #include "Player.h"
+#include "Background.h"
+#include "Alien.h"
 
 // Button dimensions
-static int buttonWidth = 200;
-static int buttonHeight = 100;
+static int buttonWidth = 300;
+static int buttonHeight = 150;
 
 // Spacing between buttons
 static int spacing = 50;
@@ -17,7 +19,9 @@ Game::~Game() {
     delete startButton;
     delete quitButton;
     delete goToMenuButton;
+    delete startBackground;
     delete player;
+    delete alienSwarm;
 }
 
 bool Game::init(const char* title, int xpos, int ypos, int width, int height, bool fullscreen) {
@@ -75,7 +79,7 @@ void Game::handleEvents() {
         case GameState::PLAYING:
             // Handle gameplay input 
             if (event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_ESCAPE) {
-                isRunning = false;
+                currentState = GameState::PAUSE;
             }
             player->handleEvent(event, renderer);
             break;
@@ -101,13 +105,17 @@ void Game::initializeAll() {
     int quitButtonY = (windowHeight / 2) + buttonHeight + spacing;
     int goToMenuButtonY = (windowHeight / 2);
 
-    // Initialize the Start button and Quit button
+    // Initialize the background
+    startBackground = new Background(0, 0, windowWidth, windowHeight, "Resource/Menu_background.png", renderer);
+
+    // Initialize the buttons
     startButton = new Button(centeredX, startButtonY, buttonWidth, buttonHeight, "Resource/start_button.png", this, Button::ButtonType::START);
     quitButton = new Button(centeredX, quitButtonY, buttonWidth, buttonHeight, "Resource/quit_button.png", this, Button::ButtonType::QUIT);
     goToMenuButton = new Button(centeredX, goToMenuButtonY, buttonWidth, buttonHeight, "Resource/go_to_menu_button.png", this, Button::ButtonType::GO_TO_MENU);
 
-    // Initialize player ship
-    player = new Player(centeredX, 700, 100, 100, "Resource/player.png", renderer, 200);
+    // Initialize player ship and alien
+    player = new Player(centeredX, 850, 100, 100, "Resource/player.png", renderer, 400);
+    alienSwarm = new AlienSwarm(renderer);
 }
 
 void Game::update() {
@@ -119,6 +127,15 @@ void Game::update() {
         break;
     case GameState::PLAYING: {
         player->update(deltaTime);
+        alienSwarm->update(deltaTime); 
+        //check if aliens reached the bottom
+        for (Alien* alien : alienSwarm->getAliens()) {
+            if (alien->getRect().y + alien->getRect().h >= player->getRect().y) {
+                setGameState(GameState::PAUSE);
+                alienSwarm->reset();
+                break;
+            }
+        }
         break;
     } 
     case GameState::PAUSE:
@@ -138,12 +155,14 @@ void Game::render() {
     switch (currentState) {
     case GameState::MENU:
         // Render menu elements
+        startBackground->render(renderer);
         startButton->render(renderer);
         quitButton->render(renderer);
         break;
     case GameState::PLAYING:
         // Render game elements 
         player->render(renderer);
+        alienSwarm->render(renderer); 
         break;
     case GameState::PAUSE:
         // Render pause menu

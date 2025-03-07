@@ -36,7 +36,7 @@ void Button::render(SDL_Renderer* renderer) {
         SDL_GetRenderDrawColor(renderer, &r, &g, &b, &a);
 
         // Set the draw color to yellow
-        SDL_SetRenderDrawColor(renderer, 255, 255, 0, 255); // Yellow border
+        SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255); // Black border
 
         // Create and draw the border
         for (int i = 0; i < 3; i++) { // Adjust thickness 

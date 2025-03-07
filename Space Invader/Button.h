@@ -5,7 +5,6 @@
 #include <functional> // For std::function (to handle button clicks)
 #include <string>
 #include "Game.h"
-#include <memory>
 
 class Game;
 
