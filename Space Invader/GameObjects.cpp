@@ -2,6 +2,7 @@
 #include <SDL.h>
 #include <SDL_image.h>
 #include <iostream>
+#include "Game.h"
 
 GameObject::GameObject(int x, int y, int w, int h, const std::string& texturePath, SDL_Renderer* renderer) :
     rect({ x, y, w, h }), texture(nullptr)

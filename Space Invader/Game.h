@@ -6,6 +6,7 @@
 #include <memory> // For std::unique_ptr
 #include "Button.h" // Include the Button class header
 #include <string>
+#include "Player.h"
 
 class Button;
 
@@ -36,10 +37,11 @@ private:
     Uint32 lastFrameTime;
     float deltaTime;
     GameState currentState;
-    std::unique_ptr<Button> startButton; // Declare startButton as a unique_ptr
-    std::unique_ptr<Button> quitButton;  // Declare quitButton as a unique_ptr
-    std::unique_ptr<Button> goToMenuButton;  // Declare goToMenuButton as a unique_ptr
-    void renderButton();
+    Button* startButton = nullptr; 
+    Button* quitButton = nullptr; 
+    Button* goToMenuButton = nullptr; 
+    Player* player = nullptr;  
+    void initializeAll();
 };
 
 #endif

@@ -2,6 +2,7 @@
 #include <iostream>
 #include "Utils.h"
 #include "Button.h"
+#include "Player.h"
 
 // Button dimensions
 static int buttonWidth = 200;
@@ -12,7 +13,12 @@ static int spacing = 50;
 
 Game::Game() : isRunning(false), window(nullptr), renderer(nullptr), lastFrameTime(0), deltaTime(0.0f), currentState(GameState::MENU) {}
 
-Game::~Game() {}
+Game::~Game() {
+    delete startButton;
+    delete quitButton;
+    delete goToMenuButton;
+    delete player;
+}
 
 bool Game::init(const char* title, int xpos, int ypos, int width, int height, bool fullscreen) {
     // Initialize SDL
@@ -44,8 +50,8 @@ bool Game::init(const char* title, int xpos, int ypos, int width, int height, bo
     // Set renderer color
     SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255); 
 
-    // Render the start menu
-    renderButton();
+    // Create the all entities
+    initializeAll();
 
     isRunning = true;
     lastFrameTime = SDL_GetTicks();
@@ -71,6 +77,7 @@ void Game::handleEvents() {
             if (event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_ESCAPE) {
                 isRunning = false;
             }
+            player->handleEvent(event, renderer);
             break;
         case GameState::PAUSE:
             // Handle pause menu input
@@ -83,33 +90,35 @@ void Game::handleEvents() {
     }
 }
 
-void Game::renderButton() {
+void Game::initializeAll() {
     // Get window dimensions
     int windowWidth, windowHeight;
     SDL_GetWindowSize(window, &windowWidth, &windowHeight);
 
     // Calculate button positions
-    int startButtonX = (windowWidth - buttonWidth) / 2; 
+    int centeredX = (windowWidth - buttonWidth) / 2; 
     int startButtonY = (windowHeight / 2);
-    int quitButtonX = (windowWidth - buttonWidth) / 2; 
     int quitButtonY = (windowHeight / 2) + buttonHeight + spacing;
-    int goToMenuButtonX = (windowWidth - buttonWidth) / 2;
     int goToMenuButtonY = (windowHeight / 2);
 
     // Initialize the Start button and Quit button
-    startButton = std::make_unique<Button>(startButtonX, startButtonY, buttonWidth, buttonHeight, "Resource/start_button.png", this, Button::ButtonType::START);
-    quitButton = std::make_unique<Button>(quitButtonX, quitButtonY, buttonWidth, buttonHeight, "Resource/quit_button.png", this, Button::ButtonType::QUIT);
-    goToMenuButton = std::make_unique<Button>(goToMenuButtonX, goToMenuButtonY, buttonWidth, buttonHeight, "Resource/go_to_menu_button.png", this, Button::ButtonType::GO_TO_MENU);
+    startButton = new Button(centeredX, startButtonY, buttonWidth, buttonHeight, "Resource/start_button.png", this, Button::ButtonType::START);
+    quitButton = new Button(centeredX, quitButtonY, buttonWidth, buttonHeight, "Resource/quit_button.png", this, Button::ButtonType::QUIT);
+    goToMenuButton = new Button(centeredX, goToMenuButtonY, buttonWidth, buttonHeight, "Resource/go_to_menu_button.png", this, Button::ButtonType::GO_TO_MENU);
 
+    // Initialize player ship
+    player = new Player(centeredX, 700, 100, 100, "Resource/player.png", renderer, 200);
 }
 
 void Game::update() {
     // Game logic
     Uint32 currentFrameTime = SDL_GetTicks();
+    deltaTime = (currentFrameTime - lastFrameTime) / 1000.0f; // Convert to seconds
     switch (currentState) {
     case GameState::MENU:
         break;
     case GameState::PLAYING: {
+        player->update(deltaTime);
         break;
     } 
     case GameState::PAUSE:
@@ -117,7 +126,6 @@ void Game::update() {
     case GameState::GAME_OVER:
         break;
     }
-    deltaTime = (currentFrameTime - lastFrameTime) / 1000.0f; // Convert to seconds
     lastFrameTime = currentFrameTime;
 }
 
@@ -135,6 +143,7 @@ void Game::render() {
         break;
     case GameState::PLAYING:
         // Render game elements 
+        player->render(renderer);
         break;
     case GameState::PAUSE:
         // Render pause menu
@@ -150,10 +159,6 @@ void Game::render() {
 }
 
 void Game::clean() {
-    // Cleanup buttons
-    startButton.reset();
-    quitButton.reset();
-
     // Destroy renderer and window
     SDL_DestroyRenderer(renderer);
     SDL_DestroyWindow(window);
