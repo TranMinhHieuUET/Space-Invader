@@ -20,6 +20,7 @@ Game::~Game() {
     delete quitButton;
     delete goToMenuButton;
     delete startBackground;
+    delete gameBackground;
     delete player;
     delete alienSwarm;
     for (Bullet* bullet : bullets) {
@@ -111,6 +112,7 @@ void Game::initializeAll() {
 
     // Initialize the background
     startBackground = new Background(0, 0, windowWidth, windowHeight, "Resource/Menu_background.png", renderer);
+    gameBackground = new Background(0, 0, windowWidth, windowHeight, "Resource/background.png", renderer);
 
     // Initialize the buttons
     startButton = new Button(centeredX, startButtonY, buttonWidth, buttonHeight, "Resource/start_button.png", this, Button::ButtonType::START);
@@ -128,6 +130,7 @@ void Game::update() {
     deltaTime = (currentFrameTime - lastFrameTime) / 1000.0f; // Convert to seconds
     switch (currentState) {
     case GameState::MENU:
+        alienSwarm->reset(); // This is so that when go from pause to menu then play again, the alien swarm will reset
         break;
     case GameState::PLAYING: {
         // Update player and alien
@@ -196,6 +199,7 @@ void Game::render() {
         break;
     case GameState::PLAYING:
         // Render game elements 
+        gameBackground->render(renderer);
         player->render(renderer);
         alienSwarm->render(renderer); 
         for (Bullet* bullet : bullets) {

@@ -49,6 +49,7 @@ private:
     Button* goToMenuButton = nullptr; 
     Player* player = nullptr;
     Background* startBackground = nullptr;
+    Background* gameBackground = nullptr;
     AlienSwarm* alienSwarm = nullptr;
     std::vector<Bullet*> bullets; 
     void initializeAll();
