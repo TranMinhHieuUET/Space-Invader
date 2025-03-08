@@ -22,6 +22,10 @@ Game::~Game() {
     delete startBackground;
     delete player;
     delete alienSwarm;
+    for (Bullet* bullet : bullets) {
+        delete bullet;
+    }
+    bullets.clear();
 }
 
 bool Game::init(const char* title, int xpos, int ypos, int width, int height, bool fullscreen) {
@@ -81,7 +85,7 @@ void Game::handleEvents() {
             if (event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_ESCAPE) {
                 currentState = GameState::PAUSE;
             }
-            player->handleEvent(event, renderer);
+            player->handleEvent(event);
             break;
         case GameState::PAUSE:
             // Handle pause menu input
@@ -114,7 +118,7 @@ void Game::initializeAll() {
     goToMenuButton = new Button(centeredX, goToMenuButtonY, buttonWidth, buttonHeight, "Resource/go_to_menu_button.png", this, Button::ButtonType::GO_TO_MENU);
 
     // Initialize player ship and alien
-    player = new Player(centeredX, 850, 100, 100, "Resource/player.png", renderer, 400);
+    player = new Player(centeredX, 850, 100, 100, "Resource/player.png", renderer, 400, bullets);
     alienSwarm = new AlienSwarm(renderer);
 }
 
@@ -126,8 +130,39 @@ void Game::update() {
     case GameState::MENU:
         break;
     case GameState::PLAYING: {
+        // Update player and alien
         player->update(deltaTime);
         alienSwarm->update(deltaTime); 
+
+        // Update bullets
+        for (size_t i = 0; i < bullets.size(); ++i) {
+            bullets[i]->update(deltaTime);
+            if (bullets[i]->shouldRemove) {
+                delete bullets[i];
+                bullets.erase(bullets.begin() + i);
+                --i; // Adjust index after erasing
+            }
+        }
+
+        // Collision detection (bullets and aliens)
+        for (int i = 0; i < bullets.size(); i++) {
+            for (int j = 0; j < alienSwarm->getAliens().size(); j++) {
+                if (bullets[i]->isColliding(*alienSwarm->getAliens()[j])) {
+                    bullets[i]->shouldRemove = true;
+                    alienSwarm->getAliens()[j]->shouldRemove = true;
+
+                    // Increase score, play sound, etc.
+                    break; // Important: Break after a collision
+                }
+            }
+        }
+
+        // Create new alien swarm when previous is defeated
+        if (alienSwarm->getAliens().empty())
+        {
+            alienSwarm->reset(); // Spawn new swarm
+        }
+
         //check if aliens reached the bottom
         for (Alien* alien : alienSwarm->getAliens()) {
             if (alien->getRect().y + alien->getRect().h >= player->getRect().y) {
@@ -163,6 +198,9 @@ void Game::render() {
         // Render game elements 
         player->render(renderer);
         alienSwarm->render(renderer); 
+        for (Bullet* bullet : bullets) {
+            bullet->render(renderer);
+        }
         break;
     case GameState::PAUSE:
         // Render pause menu

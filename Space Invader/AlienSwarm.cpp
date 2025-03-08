@@ -16,6 +16,7 @@ AlienSwarm::~AlienSwarm() {
 void AlienSwarm::update(float deltaTime) {
 
     bool edgeReached = false;
+
     //move aliens and check bounds
     for (Alien* alien : aliens) {
         alien->setDirection(horizontalDirection);
@@ -24,6 +25,7 @@ void AlienSwarm::update(float deltaTime) {
             edgeReached = true; // Set the edgeReached = true;
         }
     }
+
     //if edge reached, move down and reverse direction
     if (edgeReached) {
         horizontalDirection *= -1;
@@ -31,6 +33,7 @@ void AlienSwarm::update(float deltaTime) {
             alien->moveDown(moveDownDistance); // Move all aliens down
         }
     }
+
     //remove destroyed aliens (will work when there is bullet)
     for (int i = 0; i < aliens.size(); ++i) {
         if (aliens[i]->shouldRemove) {

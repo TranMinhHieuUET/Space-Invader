@@ -3,7 +3,7 @@
 #include <iostream>
 #include "Game.h"
 
-Button::Button(int x, int y, int w, int h, const std::string& texturePath, Game* game, ButtonType type)
+Button::Button(int x, int y, int w, int h, const std::string& texturePath, Game* game, ButtonType type) // Button constructor
     : rect({ x, y, w, h }), type(type), isHovered(false), texture(nullptr), game(game) { 
     SDL_Surface* surface = IMG_Load(texturePath.c_str());
     if (!surface) {
@@ -18,7 +18,7 @@ Button::Button(int x, int y, int w, int h, const std::string& texturePath, Game*
     }
 }
 
-Button::~Button() {
+Button::~Button() { // Button destructor
     if (texture) {
         SDL_DestroyTexture(texture);
     }
@@ -36,10 +36,10 @@ void Button::render(SDL_Renderer* renderer) {
         SDL_GetRenderDrawColor(renderer, &r, &g, &b, &a);
 
         // Set the draw color to yellow
-        SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255); // Black border
+        SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255); // White border
 
         // Create and draw the border
-        for (int i = 0; i < 3; i++) { // Adjust thickness 
+        for (int i = 0; i < 5; i++) { // Adjust thickness 
             SDL_Rect borderRect = { rect.x - i, rect.y - i, rect.w + 2 * i, rect.h + 2 * i };
             SDL_RenderDrawRect(renderer, &borderRect);
         }

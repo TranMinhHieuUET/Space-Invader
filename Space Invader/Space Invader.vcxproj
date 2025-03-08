@@ -135,6 +135,7 @@
     <ClCompile Include="Alien.cpp" />
     <ClCompile Include="AlienSwarm.cpp" />
     <ClCompile Include="Background.cpp" />
+    <ClCompile Include="Bullet.cpp" />
     <ClCompile Include="Button.cpp" />
     <ClCompile Include="Game.cpp" />
     <ClCompile Include="GameObjects.cpp" />
@@ -147,6 +148,7 @@
     <ClInclude Include="Alien.h" />
     <ClInclude Include="AlienSwarm.h" />
     <ClInclude Include="Background.h" />
+    <ClInclude Include="Bullet.h" />
     <ClInclude Include="Button.h" />
     <ClInclude Include="Game.h" />
     <ClInclude Include="Player.h" />

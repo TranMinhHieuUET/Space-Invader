@@ -15,6 +15,7 @@ class Alien;
 #include "Button.h" 
 #include "Alien.h"
 #include "AlienSwarm.h"
+#include "Bullet.h"
 
 class Game {
 public:
@@ -49,6 +50,7 @@ private:
     Player* player = nullptr;
     Background* startBackground = nullptr;
     AlienSwarm* alienSwarm = nullptr;
+    std::vector<Bullet*> bullets; 
     void initializeAll();
 };
 

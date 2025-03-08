@@ -2,9 +2,11 @@
 #include <iostream>
 #include "Game.h"
 #include "GameObjects.h"
+#include "Bullet.h"
 
-Player::Player(int x, int y, int w, int h, const std::string& texturePath, SDL_Renderer* renderer, int speed) :
-    GameObject(x, y, w, h, texturePath, renderer), speed(speed), shootCooldown(0.5f), lastShootTime(0.0f), initialX(x), initialY(y), moveDirection(0), posX(static_cast<float>(x)) {
+Player::Player(int x, int y, int w, int h, const std::string& texturePath, SDL_Renderer* renderer, int speed, std::vector<Bullet*>& bullets) :
+    GameObject(x, y, w, h, texturePath, renderer), speed(speed), shootCooldown(0.5f), lastShootTime(0.0f), initialX(x), initialY(y), 
+    moveDirection(0), isSpacebarDown(false), posX(static_cast<float>(x)), bullets(bullets), renderer(renderer) {
 }
 
 
@@ -27,10 +29,16 @@ void Player::update(float deltaTime) {
         posX = static_cast<float>(1710 - rect.w);
     }
 
+    // Handle shooting
+    if (isSpacebarDown && lastShootTime >= shootCooldown) {
+        bullets.push_back(new Bullet(rect.x + rect.w / 2 - 2, rect.y - 10, 16, 24, "Resource/bullet.png", renderer, -300)); // Negative speed for upward movement
+        lastShootTime = 0.0f;
+        // Play shoot sound here (using SDL_mixer)
+    }
     lastShootTime += deltaTime;
 }
 
-void Player::handleEvent(const SDL_Event& event, SDL_Renderer* renderer) {
+void Player::handleEvent(const SDL_Event& event) {
     if (event.type == SDL_KEYDOWN || event.type == SDL_KEYUP) {
         switch (event.key.keysym.sym) {
         case SDLK_LEFT:
@@ -50,11 +58,13 @@ void Player::handleEvent(const SDL_Event& event, SDL_Renderer* renderer) {
             }
             break;
         case SDLK_SPACE:
-            //if (lastShootTime >= shootCooldown) {
-            //    bullets.push_back(new Bullet(rect.x + rect.w / 2 - 2, rect.y - 10, 4, 10, "resources/images/bullet.png", renderer, -300)); // Negative speed for upward movement
-            //    lastShootTime = 0.0f;
-            //    // Play shoot sound here (using SDL_mixer)
-            //}
+            // Check if spacebar is pressed
+            if (event.type == SDL_KEYDOWN) {
+                isSpacebarDown = true;
+            }
+            else {
+                isSpacebarDown = false;
+            }
             break;
         }
     }
