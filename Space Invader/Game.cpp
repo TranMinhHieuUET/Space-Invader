@@ -26,15 +26,30 @@ Game::~Game() {
     for (Bullet* bullet : bullets) {
         delete bullet;
     }
+    delete score;
+    if (gameFont)
+    {
+        TTF_CloseFont(gameFont);
+    }
     bullets.clear();
 }
 
 bool Game::init(const char* title, int xpos, int ypos, int width, int height, bool fullscreen) {
     // Initialize SDL
-    if (SDL_Init(SDL_INIT_VIDEO) < 0) {
+    if (SDL_Init(SDL_INIT_VIDEO) == -1) {
         std::cerr << "SDL could not initialize! SDL_Error: " << SDL_GetError() << std::endl;
         return false;
     }
+
+    //Initialize SDL_Image
+    if (!(IMG_Init(IMG_INIT_PNG) & IMG_INIT_PNG)) {
+        std::cerr << "SDL_image could not initialize! SDL_image Error: " << IMG_GetError() << std::endl;
+    }
+
+    //Initialize SDL_ttf
+    if (TTF_Init() == -1) {
+        std::cerr << "TTF_Init: " << TTF_GetError() << std::endl;
+    } 
 
     // Create window
     Uint32 flags = fullscreen ? SDL_WINDOW_FULLSCREEN : 0;
@@ -51,11 +66,6 @@ bool Game::init(const char* title, int xpos, int ypos, int width, int height, bo
         return false;
     }
 
-    //Initialize SDL_Image
-    if (!(IMG_Init(IMG_INIT_PNG) & IMG_INIT_PNG)) { 
-        std::cerr << "SDL_image could not initialize! SDL_image Error: " << IMG_GetError() << std::endl;
-    }
-
     // Set renderer color
     SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255); 
 
@@ -67,6 +77,35 @@ bool Game::init(const char* title, int xpos, int ypos, int width, int height, bo
     deltaTime = 0.0f;
 
     return true;
+}
+
+void Game::initializeAll() {
+    // Get window dimensions
+    int windowWidth, windowHeight;
+    SDL_GetWindowSize(window, &windowWidth, &windowHeight);
+
+    // Calculate button positions
+    int centeredX = (windowWidth - buttonWidth) / 2;
+    int startButtonY = (windowHeight / 2);
+    int quitButtonY = (windowHeight / 2) + buttonHeight + spacing;
+    int goToMenuButtonY = (windowHeight / 2);
+
+    // Initialize the background
+    startBackground = new Background(0, 0, windowWidth, windowHeight, "Resource/Menu_background.png", renderer);
+    gameBackground = new Background(0, 0, windowWidth, windowHeight, "Resource/background.png", renderer);
+
+    // Initialize the buttons
+    startButton = new Button(centeredX, startButtonY, buttonWidth, buttonHeight, "Resource/start_button.png", this, Button::ButtonType::START);
+    quitButton = new Button(centeredX, quitButtonY, buttonWidth, buttonHeight, "Resource/quit_button.png", this, Button::ButtonType::QUIT);
+    goToMenuButton = new Button(centeredX, goToMenuButtonY, buttonWidth, buttonHeight, "Resource/go_to_menu_button.png", this, Button::ButtonType::GO_TO_MENU);
+
+    // Initialize font
+    gameFont = TTF_OpenFont("Resource/ARCADECLASSIC.ttf", 28);
+    score = new Score(gameFont, renderer);
+
+    // Initialize player ship and alien
+    player = new Player(centeredX, 850, 100, 100, "Resource/player.png", renderer, 400, bullets);
+    alienSwarm = new AlienSwarm(renderer);
 }
 
 void Game::handleEvents() {
@@ -99,31 +138,6 @@ void Game::handleEvents() {
     }
 }
 
-void Game::initializeAll() {
-    // Get window dimensions
-    int windowWidth, windowHeight;
-    SDL_GetWindowSize(window, &windowWidth, &windowHeight);
-
-    // Calculate button positions
-    int centeredX = (windowWidth - buttonWidth) / 2; 
-    int startButtonY = (windowHeight / 2);
-    int quitButtonY = (windowHeight / 2) + buttonHeight + spacing;
-    int goToMenuButtonY = (windowHeight / 2);
-
-    // Initialize the background
-    startBackground = new Background(0, 0, windowWidth, windowHeight, "Resource/Menu_background.png", renderer);
-    gameBackground = new Background(0, 0, windowWidth, windowHeight, "Resource/background.png", renderer);
-
-    // Initialize the buttons
-    startButton = new Button(centeredX, startButtonY, buttonWidth, buttonHeight, "Resource/start_button.png", this, Button::ButtonType::START);
-    quitButton = new Button(centeredX, quitButtonY, buttonWidth, buttonHeight, "Resource/quit_button.png", this, Button::ButtonType::QUIT);
-    goToMenuButton = new Button(centeredX, goToMenuButtonY, buttonWidth, buttonHeight, "Resource/go_to_menu_button.png", this, Button::ButtonType::GO_TO_MENU);
-
-    // Initialize player ship and alien
-    player = new Player(centeredX, 850, 100, 100, "Resource/player.png", renderer, 400, bullets);
-    alienSwarm = new AlienSwarm(renderer);
-}
-
 void Game::update() {
     // Game logic
     Uint32 currentFrameTime = SDL_GetTicks();
@@ -131,6 +145,7 @@ void Game::update() {
     switch (currentState) {
     case GameState::MENU:
         alienSwarm->reset(); // This is so that when go from pause to menu then play again, the alien swarm will reset
+        score->reset(); // The same for score
         break;
     case GameState::PLAYING: {
         // Update player and alien
@@ -153,7 +168,7 @@ void Game::update() {
                 if (bullets[i]->isColliding(*alienSwarm->getAliens()[j])) {
                     bullets[i]->shouldRemove = true;
                     alienSwarm->getAliens()[j]->shouldRemove = true;
-
+                    score->increaseScore(10);
                     // Increase score, play sound, etc.
                     break; // Important: Break after a collision
                 }
@@ -169,7 +184,7 @@ void Game::update() {
         //check if aliens reached the bottom
         for (Alien* alien : alienSwarm->getAliens()) {
             if (alien->getRect().y + alien->getRect().h >= player->getRect().y) {
-                setGameState(GameState::PAUSE);
+                setGameState(GameState::GAME_OVER);
                 alienSwarm->reset();
                 break;
             }
@@ -205,6 +220,7 @@ void Game::render() {
         for (Bullet* bullet : bullets) {
             bullet->render(renderer);
         }
+        score->render(600, 10);
         break;
     case GameState::PAUSE:
         // Render pause menu
@@ -225,5 +241,7 @@ void Game::clean() {
     SDL_DestroyWindow(window);
 
     // Quit SDL subsystems
+    TTF_Quit();
+    IMG_Quit();
     SDL_Quit();
 }

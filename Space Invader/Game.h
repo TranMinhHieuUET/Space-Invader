@@ -4,11 +4,13 @@
 #include <SDL.h>
 #include <SDL_image.h>
 #include <string>
+#include <SDL_ttf.h>
 
 class Button;
 class Player;
 class Background;
 class Alien;
+class Score;
 
 #include "Player.h"
 #include "Background.h"
@@ -16,6 +18,7 @@ class Alien;
 #include "Alien.h"
 #include "AlienSwarm.h"
 #include "Bullet.h"
+#include "Score.h"
 
 class Game {
 public:
@@ -52,6 +55,8 @@ private:
     Background* gameBackground = nullptr;
     AlienSwarm* alienSwarm = nullptr;
     std::vector<Bullet*> bullets; 
+    TTF_Font* gameFont = nullptr;
+    Score* score = nullptr;
     void initializeAll();
 };
 
