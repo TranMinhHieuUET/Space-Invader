@@ -178,6 +178,7 @@ void Game::update() {
         // Create new alien swarm when previous is defeated
         if (alienSwarm->getAliens().empty())
         {
+            alienSwarm->increaseSpeed(0.1f); // Increase speed
             alienSwarm->reset(); // Spawn new swarm
         }
 

@@ -14,10 +14,14 @@ public:
     void render(SDL_Renderer* renderer);
     void reset(); // Reset swarm 
     std::vector<Alien*>& getAliens() { return aliens; }
+    void increaseSpeed(float increase); 
+
 private:
     std::vector<Alien*> aliens;
     SDL_Renderer* renderer; 
     int horizontalDirection;
     int moveDownDistance;
+    float speedMultiplier;
+    float baseAlienSpeed;     
 };
 #endif

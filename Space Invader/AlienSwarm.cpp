@@ -1,7 +1,8 @@
 #include "AlienSwarm.h"
 #include <iostream>
+#include "Alien.h"
 
-AlienSwarm::AlienSwarm(SDL_Renderer* renderer) : renderer(renderer), horizontalDirection(1), moveDownDistance(50)
+AlienSwarm::AlienSwarm(SDL_Renderer* renderer) : renderer(renderer), horizontalDirection(1), moveDownDistance(50), baseAlienSpeed(100.0f), speedMultiplier(1.0f) 
 {
     reset(); // Initialize the aliens
 }
@@ -34,7 +35,7 @@ void AlienSwarm::update(float deltaTime) {
         }
     }
 
-    //remove destroyed aliens (will work when there is bullet)
+    //remove destroyed aliens 
     for (int i = 0; i < aliens.size(); ++i) {
         if (aliens[i]->shouldRemove) {
             delete aliens[i];
@@ -67,12 +68,21 @@ void AlienSwarm::reset() {
     int startX = 50;
     int startY = 50;
 
+    // Calculate current speed
+    float currentSpeed = baseAlienSpeed * speedMultiplier; 
+
     for (int row = 0; row < rows; ++row) {
         for (int col = 0; col < cols; ++col) {
             int x = startX + col * (alienWidth + hPadding);
             int y = startY + row * (alienHeight + hPadding);
-            aliens.push_back(new Alien(x, y, alienWidth, alienHeight, "Resource/alien.png", renderer));
+            Alien* newAlien = new Alien(x, y, alienWidth, alienHeight, "Resource/alien.png", renderer);
+            newAlien->setSpeed(currentSpeed); 
+            aliens.push_back(newAlien);
         }
     }
     horizontalDirection = 1;
+}
+
+void AlienSwarm::increaseSpeed(float increase) {
+    speedMultiplier += increase;
 }

@@ -13,13 +13,13 @@ public:
     int getDirection() const { return direction; }
     void moveDown(int amount); //This is to move down
     bool shouldRemove = false;
-
-
+    void setSpeed(float newSpeed) { speed = newSpeed; }
+    float getSpeed() { return speed; }
+    
 private:
     float posX;
     int direction = 1; // 1 for right, -1 for left
-    int speed;
-
+    float speed;
 };
 
 #endif
