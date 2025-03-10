@@ -55,6 +55,7 @@ private:
     Background* gameBackground = nullptr;
     AlienSwarm* alienSwarm = nullptr;
     std::vector<Bullet*> bullets; 
+    std::vector<Bullet*> enemiesBullets;
     TTF_Font* gameFont = nullptr;
     Score* score = nullptr;
     void initializeAll();

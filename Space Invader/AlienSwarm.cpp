@@ -1,8 +1,19 @@
 #include "AlienSwarm.h"
 #include <iostream>
 #include "Alien.h"
+#include "Bullet.h"
+#include <stdlib.h>
 
-AlienSwarm::AlienSwarm(SDL_Renderer* renderer) : renderer(renderer), horizontalDirection(1), moveDownDistance(50), baseAlienSpeed(100.0f), speedMultiplier(1.0f) 
+static int rows = 5;
+static int cols = 11;
+static int alienWidth = 78;
+static int alienHeight = 66;
+static int hPadding = 10;
+static int startX = 50;
+static int startY = 50;
+
+AlienSwarm::AlienSwarm(SDL_Renderer* renderer, std::vector<Bullet*>& enemiesBullets) : renderer(renderer), horizontalDirection(1), moveDownDistance(50), baseAlienSpeed(100.0f),
+                                                 speedMultiplier(1.0f), timeSinceLastShot(0.0f), shootInterval(2.0f), enemiesBullets(enemiesBullets)
 {
     reset(); // Initialize the aliens
 }
@@ -17,6 +28,14 @@ AlienSwarm::~AlienSwarm() {
 void AlienSwarm::update(float deltaTime) {
 
     bool edgeReached = false;
+    timeSinceLastShot += deltaTime;
+
+    // Shoot a bullet
+    if (timeSinceLastShot > shootInterval)
+    {
+        shoot();
+        timeSinceLastShot = 0;
+    }
 
     //move aliens and check bounds
     for (Alien* alien : aliens) {
@@ -43,12 +62,28 @@ void AlienSwarm::update(float deltaTime) {
             --i; // Adjust index after erasing
         }
     }
+
+    //// Update bullet (remove if hit player or go out of screen)
+    //for (size_t i = 0; i < enemiesBullets.size(); ++i) {
+    //    enemiesBullets[i]->update(deltaTime);
+    //    if (enemiesBullets[i]->shouldRemove) { 
+    //        delete enemiesBullets[i];
+    //        enemiesBullets.erase(enemiesBullets.begin() + i);
+    //        --i; // Adjust index after erasing
+    //    }
+    //}
 }
 
 
 void AlienSwarm::render(SDL_Renderer* renderer) {
+    // Render aliens
     for (Alien* alien : aliens) {
         alien->render(renderer);
+    }
+
+    // Render enemiesBullets
+    for (Bullet* bullet : enemiesBullets) {
+        bullet->render(renderer);
     }
 }
 
@@ -59,18 +94,10 @@ void AlienSwarm::reset() {
     }
     aliens.clear();
 
-    // Create new aliens
-    int rows = 5;
-    int cols = 11;
-    int alienWidth = 78;
-    int alienHeight = 66;
-    int hPadding = 10;
-    int startX = 50;
-    int startY = 50;
-
     // Calculate current speed
     float currentSpeed = baseAlienSpeed * speedMultiplier; 
 
+    // Create new aliens
     for (int row = 0; row < rows; ++row) {
         for (int col = 0; col < cols; ++col) {
             int x = startX + col * (alienWidth + hPadding);
@@ -85,4 +112,21 @@ void AlienSwarm::reset() {
 
 void AlienSwarm::increaseSpeed(float increase) {
     speedMultiplier += increase;
+}
+
+void AlienSwarm::shoot() {
+    // Check if there is any alien
+    if (aliens.empty()) {
+        return; 
+    }
+
+    // Create random index to choose an alien to shoot from
+    srand(time(0));
+    int shooterIndex = rand() % (aliens.size());
+    Alien* shooter = aliens[shooterIndex];
+
+    // Create a bullet at the alien's position
+    int bulletX = shooter->getRect().x + shooter->getRect().w / 2 - 10; // Center bullet
+    int bulletY = shooter->getRect().y + shooter->getRect().h;
+    enemiesBullets.push_back(new Bullet(bulletX, bulletY, 20, 20, "Resource/alien_bullet.png", renderer, 400)); // Adjust size and speed
 }

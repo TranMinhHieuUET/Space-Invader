@@ -70,7 +70,6 @@ void Button::handleEvent(const SDL_Event& event) {
                 game->setRunning(false); // Quit the game
                 break;
             case ButtonType::GO_TO_MENU:
-                std::cout << "Go to menu";
                 game->setGameState(Game::GameState::MENU); // Move from pause to menu
             }
         }

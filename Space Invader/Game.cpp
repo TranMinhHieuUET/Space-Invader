@@ -26,6 +26,10 @@ Game::~Game() {
     for (Bullet* bullet : bullets) {
         delete bullet;
     }
+    for (Bullet* bullet : enemiesBullets) {
+        delete bullet;
+    }
+    enemiesBullets.clear();
     delete score;
     if (gameFont)
     {
@@ -105,7 +109,7 @@ void Game::initializeAll() {
 
     // Initialize player ship and alien
     player = new Player(centeredX, 850, 100, 100, "Resource/player.png", renderer, 400, bullets);
-    alienSwarm = new AlienSwarm(renderer);
+    alienSwarm = new AlienSwarm(renderer, enemiesBullets);
 }
 
 void Game::handleEvents() {
@@ -133,6 +137,7 @@ void Game::handleEvents() {
             break;
         case GameState::GAME_OVER:
             // Handle game over input 
+            quitButton->handleEvent(event);
             break;
         }
     }
@@ -144,6 +149,17 @@ void Game::update() {
     deltaTime = (currentFrameTime - lastFrameTime) / 1000.0f; // Convert to seconds
     switch (currentState) {
     case GameState::MENU:
+        // Reset bullets
+        for (Bullet* bullet : bullets) {
+            delete bullet;
+        }
+        bullets.clear();
+
+        // Reset enemies bullets
+        for (Bullet* bullet : enemiesBullets) {
+            delete bullet;
+        }
+        enemiesBullets.clear();
         alienSwarm->reset(); // This is so that when go from pause to menu then play again, the alien swarm will reset
         score->reset(); // The same for score
         break;
@@ -152,12 +168,22 @@ void Game::update() {
         player->update(deltaTime);
         alienSwarm->update(deltaTime); 
 
-        // Update bullets
+        // Update player bullets
         for (size_t i = 0; i < bullets.size(); ++i) {
             bullets[i]->update(deltaTime);
             if (bullets[i]->shouldRemove) {
                 delete bullets[i];
                 bullets.erase(bullets.begin() + i);
+                --i; // Adjust index after erasing
+            }
+        }
+
+        //Update enemy bullets
+        for (size_t i = 0; i < enemiesBullets.size(); ++i) {
+            enemiesBullets[i]->update(deltaTime);
+            if (enemiesBullets[i]->shouldRemove) {
+                delete enemiesBullets[i];
+                enemiesBullets.erase(enemiesBullets.begin() + i);
                 --i; // Adjust index after erasing
             }
         }
@@ -170,8 +196,18 @@ void Game::update() {
                     alienSwarm->getAliens()[j]->shouldRemove = true;
                     score->increaseScore(10);
                     // Increase score, play sound, etc.
-                    break; // Important: Break after a collision
+                    break; // Break after a collision
                 }
+            }
+        }
+
+        // Collision detection (bullets and player)
+        for (int i = 0; i < enemiesBullets.size(); i++) {
+            if (enemiesBullets[i]->isColliding(*player)) {
+                enemiesBullets[i]->shouldRemove = true;
+                setGameState(GameState::GAME_OVER);
+                // Increase score, play sound, etc.
+                break; // Break after a collision
             }
         }
 
@@ -186,7 +222,6 @@ void Game::update() {
         for (Alien* alien : alienSwarm->getAliens()) {
             if (alien->getRect().y + alien->getRect().h >= player->getRect().y) {
                 setGameState(GameState::GAME_OVER);
-                alienSwarm->reset();
                 break;
             }
         }
@@ -221,6 +256,9 @@ void Game::render() {
         for (Bullet* bullet : bullets) {
             bullet->render(renderer);
         }
+        for (Bullet* bullet : enemiesBullets) {
+            bullet->render(renderer);
+        }
         score->render(600, 10);
         break;
     case GameState::PAUSE:
@@ -229,6 +267,7 @@ void Game::render() {
         break;
     case GameState::GAME_OVER:
         // Render game over screen elements
+        quitButton->render(renderer);
         break;
     }
 
