@@ -133,6 +133,9 @@ void Game::handleEvents() {
             break;
         case GameState::PAUSE:
             // Handle pause menu input
+            if (event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_ESCAPE) {
+                currentState = GameState::PLAYING; // Go back to playing
+            }
             goToMenuButton->handleEvent(event);
             break;
         case GameState::GAME_OVER:
@@ -263,6 +266,16 @@ void Game::render() {
         break;
     case GameState::PAUSE:
         // Render pause menu
+        gameBackground->render(renderer);
+        player->render(renderer);
+        alienSwarm->render(renderer);
+        for (Bullet* bullet : bullets) {
+            bullet->render(renderer);
+        }
+        for (Bullet* bullet : enemiesBullets) {
+            bullet->render(renderer);
+        }
+        score->render(600, 10);
         goToMenuButton->render(renderer);
         break;
     case GameState::GAME_OVER:
