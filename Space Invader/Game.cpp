@@ -30,6 +30,7 @@ Game::~Game() {
         delete bullet;
     }
     enemiesBullets.clear();
+    delete livesManager;
     delete score;
     if (gameFont)
     {
@@ -110,6 +111,7 @@ void Game::initializeAll() {
     // Initialize player ship and alien
     player = new Player(centeredX, 850, 100, 100, "Resource/player.png", renderer, 400, bullets);
     alienSwarm = new AlienSwarm(renderer, enemiesBullets);
+    livesManager = new LivesManager(3, gameFont, renderer);
 }
 
 void Game::handleEvents() {
@@ -208,7 +210,7 @@ void Game::update() {
         for (int i = 0; i < enemiesBullets.size(); i++) {
             if (enemiesBullets[i]->isColliding(*player)) {
                 enemiesBullets[i]->shouldRemove = true;
-                setGameState(GameState::GAME_OVER);
+                livesManager->loseLife();
                 // Increase score, play sound, etc.
                 break; // Break after a collision
             }
@@ -227,6 +229,12 @@ void Game::update() {
                 setGameState(GameState::GAME_OVER);
                 break;
             }
+        }
+
+        // Check if player's lives is 0
+        if (livesManager->isGameOver())
+        {
+            setGameState(GameState::GAME_OVER);
         }
         break;
     } 
@@ -262,6 +270,7 @@ void Game::render() {
         for (Bullet* bullet : enemiesBullets) {
             bullet->render(renderer);
         }
+        livesManager->render(10, 10); // Render lives at (10, 10)
         score->render(600, 10);
         break;
     case GameState::PAUSE:

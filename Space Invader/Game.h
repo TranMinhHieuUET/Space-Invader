@@ -11,6 +11,7 @@ class Player;
 class Background;
 class Alien;
 class Score;
+class LivesManager;
 
 #include "Player.h"
 #include "Background.h"
@@ -19,6 +20,7 @@ class Score;
 #include "AlienSwarm.h"
 #include "Bullet.h"
 #include "Score.h"
+#include "LivesManager.h"
 
 class Game {
 public:
@@ -54,6 +56,7 @@ private:
     Background* startBackground = nullptr;
     Background* gameBackground = nullptr;
     AlienSwarm* alienSwarm = nullptr;
+    LivesManager* livesManager = nullptr;
     std::vector<Bullet*> bullets; 
     std::vector<Bullet*> enemiesBullets;
     TTF_Font* gameFont = nullptr;
