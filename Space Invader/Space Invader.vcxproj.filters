@@ -54,6 +54,9 @@
     <ClCompile Include="LivesManager.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="HighScore.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Game.h">
@@ -86,10 +89,50 @@
     <ClInclude Include="LivesManager.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="HighScore.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <Image Include="Trần Minh Hiếu 2024.png">
+    <Image Include="Resource\alien.png">
       <Filter>Resource Files</Filter>
     </Image>
+    <Image Include="Resource\alien_bullet.png">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="Resource\background.png">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="Resource\bullet.png">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="Resource\go_to_menu_button.png">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="Resource\highscore_button.png">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="Resource\Menu_background.png">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="Resource\player.png">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="Resource\quit_button.png">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="Resource\start_button.png">
+      <Filter>Resource Files</Filter>
+    </Image>
+  </ItemGroup>
+  <ItemGroup>
+    <Font Include="Resource\ARCADECLASSIC.TTF">
+      <Filter>Resource Files</Filter>
+    </Font>
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="highScore.txt">
+      <Filter>Source Files</Filter>
+    </Text>
   </ItemGroup>
 </Project>

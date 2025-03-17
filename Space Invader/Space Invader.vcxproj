@@ -140,6 +140,7 @@
     <ClCompile Include="Game.cpp" />
     <ClCompile Include="GameObjects.cpp" />
     <ClCompile Include="GameObjects.h" />
+    <ClCompile Include="HighScore.cpp" />
     <ClCompile Include="LivesManager.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Player.cpp" />
@@ -153,13 +154,29 @@
     <ClInclude Include="Bullet.h" />
     <ClInclude Include="Button.h" />
     <ClInclude Include="Game.h" />
+    <ClInclude Include="HighScore.h" />
     <ClInclude Include="LivesManager.h" />
     <ClInclude Include="Player.h" />
     <ClInclude Include="Score.h" />
     <ClInclude Include="Utils.h" />
   </ItemGroup>
   <ItemGroup>
-    <Image Include="Trần Minh Hiếu 2024.png" />
+    <Image Include="Resource\alien.png" />
+    <Image Include="Resource\alien_bullet.png" />
+    <Image Include="Resource\background.png" />
+    <Image Include="Resource\bullet.png" />
+    <Image Include="Resource\go_to_menu_button.png" />
+    <Image Include="Resource\highscore_button.png" />
+    <Image Include="Resource\Menu_background.png" />
+    <Image Include="Resource\player.png" />
+    <Image Include="Resource\quit_button.png" />
+    <Image Include="Resource\start_button.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Font Include="Resource\ARCADECLASSIC.TTF" />
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="highScore.txt" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

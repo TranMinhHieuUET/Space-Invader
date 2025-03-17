@@ -31,8 +31,6 @@ void LivesManager::render(int x, int y) {
     if (!surface)
     {
         std::cerr << "TTF Error:" << TTF_GetError() << std::endl;
-        TTF_CloseFont(font);
-        TTF_Quit();
         return;
     }
     SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, surface);
@@ -40,8 +38,6 @@ void LivesManager::render(int x, int y) {
     {
         std::cerr << "Texture creation Error:" << SDL_GetError() << std::endl;
         SDL_FreeSurface(surface);
-        TTF_CloseFont(font);
-        TTF_Quit();
         return;
     }
 

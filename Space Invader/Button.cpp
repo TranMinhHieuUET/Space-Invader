@@ -71,6 +71,10 @@ void Button::handleEvent(const SDL_Event& event) {
                 break;
             case ButtonType::GO_TO_MENU:
                 game->setGameState(Game::GameState::MENU); // Move from pause to menu
+                break;
+			case ButtonType::SCORE:
+				game->setGameState(Game::GameState::HIGHSCORE); // Move from menu to score screen
+                break;
             }
         }
     }

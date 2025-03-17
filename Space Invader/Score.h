@@ -21,7 +21,7 @@ private:
     SDL_Color textColor;
     SDL_Renderer* renderer;
     TTF_Font* font;
-    void updateTexture(); // Helper function to update the texture
+    void updateTexture(); 
 };
 
 #endif

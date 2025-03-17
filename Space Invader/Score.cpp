@@ -13,9 +13,6 @@ Score::~Score() {
     if (scoreTexture) {
         SDL_DestroyTexture(scoreTexture);
     }
-    if (font) {
-        TTF_CloseFont(font);
-    }
 }
 
 void Score::increaseScore(int points) {

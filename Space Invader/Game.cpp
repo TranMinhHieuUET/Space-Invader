@@ -10,33 +10,34 @@
 static int buttonWidth = 300;
 static int buttonHeight = 150;
 
-// Spacing between buttons
-static int spacing = 50;
+// Get screen dimensions
+static int windowWidth = 1710;
+static int windowHeight = 980;
 
-Game::Game() : isRunning(false), window(nullptr), renderer(nullptr), lastFrameTime(0), deltaTime(0.0f), currentState(GameState::MENU) {}
+Game::Game() : isRunning(false), window(nullptr), renderer(nullptr), lastFrameTime(0), deltaTime(0.0f), currentState(GameState::MENU), scoreAdded(false) {}
 
 Game::~Game() {
     delete startButton;
     delete quitButton;
     delete goToMenuButton;
+    delete scoreButton;
     delete startBackground;
     delete gameBackground;
     delete player;
     delete alienSwarm;
-    for (Bullet* bullet : bullets) {
-        delete bullet;
+    if (!bullets.empty()) {
+        for (Bullet* bullet : bullets) {
+            delete bullet;
+        }
     }
+    bullets.clear();
     for (Bullet* bullet : enemiesBullets) {
         delete bullet;
     }
     enemiesBullets.clear();
     delete livesManager;
+	delete highScore;
     delete score;
-    if (gameFont)
-    {
-        TTF_CloseFont(gameFont);
-    }
-    bullets.clear();
 }
 
 bool Game::init(const char* title, int xpos, int ypos, int width, int height, bool fullscreen) {
@@ -85,28 +86,38 @@ bool Game::init(const char* title, int xpos, int ypos, int width, int height, bo
 }
 
 void Game::initializeAll() {
-    // Get window dimensions
-    int windowWidth, windowHeight;
-    SDL_GetWindowSize(window, &windowWidth, &windowHeight);
-
     // Calculate button positions
     int centeredX = (windowWidth - buttonWidth) / 2;
-    int startButtonY = (windowHeight / 2);
-    int quitButtonY = (windowHeight / 2) + buttonHeight + spacing;
-    int goToMenuButtonY = (windowHeight / 2);
+	int centeredY = (windowHeight - buttonHeight) / 2;
+    int menuButtonsY = 750;
+    int startButtonX = centeredX - buttonWidth - 100;
+    int scoreButtonX = centeredX;
+    int quitButtonX = centeredX + buttonWidth + 100;
+    int goToMenuButtonX = 100;
+	
 
     // Initialize the background
     startBackground = new Background(0, 0, windowWidth, windowHeight, "Resource/Menu_background.png", renderer);
     gameBackground = new Background(0, 0, windowWidth, windowHeight, "Resource/background.png", renderer);
 
     // Initialize the buttons
-    startButton = new Button(centeredX, startButtonY, buttonWidth, buttonHeight, "Resource/start_button.png", this, Button::ButtonType::START);
-    quitButton = new Button(centeredX, quitButtonY, buttonWidth, buttonHeight, "Resource/quit_button.png", this, Button::ButtonType::QUIT);
-    goToMenuButton = new Button(centeredX, goToMenuButtonY, buttonWidth, buttonHeight, "Resource/go_to_menu_button.png", this, Button::ButtonType::GO_TO_MENU);
+    startButton = new Button(startButtonX, menuButtonsY, buttonWidth, buttonHeight, "Resource/start_button.png", this, Button::ButtonType::START);
+    quitButton = new Button(quitButtonX, menuButtonsY, buttonWidth, buttonHeight, "Resource/quit_button.png", this, Button::ButtonType::QUIT);
+    goToMenuButton = new Button(centeredX, centeredY, buttonWidth, buttonHeight, "Resource/go_to_menu_button.png", this, Button::ButtonType::GO_TO_MENU);
+	scoreButton = new Button(scoreButtonX, menuButtonsY, buttonWidth, buttonHeight, "Resource/highscore_button.png", this, Button::ButtonType::SCORE);
 
-    // Initialize font
+    // Initialize font, high score class and score counter
     gameFont = TTF_OpenFont("Resource/ARCADECLASSIC.ttf", 28);
+    if (gameFont == nullptr) {
+        std::cerr << "Renderer could not be created! SDL_Error: " << SDL_GetError() << std::endl;
+    }
+    scoreFont = TTF_OpenFont("Resource/ARCADECLASSIC.ttf", 60);
+    if (scoreFont == nullptr) {
+        std::cerr << "Renderer could not be created! SDL_Error: " << SDL_GetError() << std::endl;
+    }
     score = new Score(gameFont, renderer);
+	highScore = new HighScore("highScore.txt", scoreFont, renderer);
+	highScore->load();
 
     // Initialize player ship and alien
     player = new Player(centeredX, 850, 100, 100, "Resource/player.png", renderer, 400, bullets);
@@ -125,6 +136,7 @@ void Game::handleEvents() {
             // Handle menu input 
             startButton->handleEvent(event); 
             quitButton->handleEvent(event);  
+			scoreButton->handleEvent(event);
             break;
         case GameState::PLAYING:
             // Handle gameplay input 
@@ -142,8 +154,19 @@ void Game::handleEvents() {
             break;
         case GameState::GAME_OVER:
             // Handle game over input 
+            if (!scoreAdded) {
+                highScore->addScore(score->getScore());
+                highScore->save();
+                scoreAdded = true;
+            }
             quitButton->handleEvent(event);
             break;
+		case GameState::HIGHSCORE:
+			// Handle highscore input
+            if (event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_ESCAPE) {
+                currentState = GameState::MENU;
+            }
+			break;
         }
     }
 }
@@ -257,6 +280,7 @@ void Game::render() {
         // Render menu elements
         startBackground->render(renderer);
         startButton->render(renderer);
+		scoreButton->render(renderer);
         quitButton->render(renderer);
         break;
     case GameState::PLAYING:
@@ -291,6 +315,9 @@ void Game::render() {
         // Render game over screen elements
         quitButton->render(renderer);
         break;
+	case GameState::HIGHSCORE:
+		// Render highscore screen elements
+		highScore->render(windowWidth/2, 100, scoreFont);
     }
 
     // Update the screen
@@ -301,6 +328,18 @@ void Game::clean() {
     // Destroy renderer and window
     SDL_DestroyRenderer(renderer);
     SDL_DestroyWindow(window);
+
+    // Release font
+    if (gameFont)
+    {
+        TTF_CloseFont(gameFont);
+        gameFont = nullptr;
+    }
+    if (scoreFont)
+    {
+        TTF_CloseFont(scoreFont);
+        scoreFont = nullptr;
+    }
 
     // Quit SDL subsystems
     TTF_Quit();

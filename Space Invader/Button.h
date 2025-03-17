@@ -14,7 +14,8 @@ public:
         START,
         QUIT,
         CONTINUE,
-        GO_TO_MENU
+		GO_TO_MENU,
+		SCORE
     };
     Button(int x, int y, int w, int h, const std::string& texturePath, Game* game, ButtonType type);
     ~Button();

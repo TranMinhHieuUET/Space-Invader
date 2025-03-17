@@ -12,6 +12,7 @@ class Background;
 class Alien;
 class Score;
 class LivesManager;
+class HighScore;
 
 #include "Player.h"
 #include "Background.h"
@@ -21,6 +22,7 @@ class LivesManager;
 #include "Bullet.h"
 #include "Score.h"
 #include "LivesManager.h"
+#include "HighScore.h"
 
 class Game {
 public:
@@ -28,7 +30,8 @@ public:
         MENU,
         PLAYING,
         PAUSE,
-        GAME_OVER
+        GAME_OVER,
+        HIGHSCORE
     };
     Game();
     ~Game();
@@ -51,15 +54,19 @@ private:
     GameState currentState;
     Button* startButton = nullptr; 
     Button* quitButton = nullptr;
+	HighScore* highScore = nullptr;
     Button* goToMenuButton = nullptr; 
+	Button* scoreButton = nullptr;
     Player* player = nullptr;
+    TTF_Font* gameFont = nullptr;
+    TTF_Font* scoreFont = nullptr;
     Background* startBackground = nullptr;
     Background* gameBackground = nullptr;
     AlienSwarm* alienSwarm = nullptr;
     LivesManager* livesManager = nullptr;
+    bool scoreAdded;
     std::vector<Bullet*> bullets; 
     std::vector<Bullet*> enemiesBullets;
-    TTF_Font* gameFont = nullptr;
     Score* score = nullptr;
     void initializeAll();
 };
