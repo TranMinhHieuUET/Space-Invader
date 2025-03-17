@@ -21,8 +21,10 @@ Game::~Game() {
     delete quitButton;
     delete goToMenuButton;
     delete scoreButton;
+	delete replayButton;
     delete startBackground;
     delete gameBackground;
+	delete pauseGoToMenuButton;
     delete player;
     delete alienSwarm;
     if (!bullets.empty()) {
@@ -105,6 +107,8 @@ void Game::initializeAll() {
     quitButton = new Button(quitButtonX, menuButtonsY, buttonWidth, buttonHeight, "Resource/quit_button.png", this, Button::ButtonType::QUIT);
     goToMenuButton = new Button(centeredX, centeredY, buttonWidth, buttonHeight, "Resource/go_to_menu_button.png", this, Button::ButtonType::GO_TO_MENU);
 	scoreButton = new Button(scoreButtonX, menuButtonsY, buttonWidth, buttonHeight, "Resource/highscore_button.png", this, Button::ButtonType::SCORE);
+	pauseGoToMenuButton = new Button(startButtonX, menuButtonsY, buttonWidth, buttonHeight, "Resource/go_to_menu_button.png", this, Button::ButtonType::GO_TO_MENU);
+	replayButton = new Button(centeredX, menuButtonsY, buttonWidth, buttonHeight, "Resource/replay_button.png", this, Button::ButtonType::START);
 
     // Initialize font, high score class and score counter
     gameFont = TTF_OpenFont("Resource/ARCADECLASSIC.ttf", 28);
@@ -159,7 +163,9 @@ void Game::handleEvents() {
                 highScore->save();
                 scoreAdded = true;
             }
+			pauseGoToMenuButton->handleEvent(event);
             quitButton->handleEvent(event);
+			replayButton->handleEvent(event);
             break;
 		case GameState::HIGHSCORE:
 			// Handle highscore input
@@ -190,6 +196,7 @@ void Game::update() {
         enemiesBullets.clear();
         alienSwarm->reset(); // This is so that when go from pause to menu then play again, the alien swarm will reset
         score->reset(); // The same for score
+		livesManager->reset(); // The same for lives  
         break;
     case GameState::PLAYING: {
         // Update player and alien
@@ -264,6 +271,20 @@ void Game::update() {
     case GameState::PAUSE:
         break;
     case GameState::GAME_OVER:
+        // Reset bullets
+        for (Bullet* bullet : bullets) {
+            delete bullet;
+        }
+        bullets.clear();
+
+        // Reset enemies bullets
+        for (Bullet* bullet : enemiesBullets) {
+            delete bullet;
+        }
+        enemiesBullets.clear();
+        alienSwarm->reset(); // This is so that when go from pause to menu then play again, the alien swarm will reset
+        score->reset(); // The same for score
+        livesManager->reset(); // The same for lives  
         break;
     }
     lastFrameTime = currentFrameTime;
@@ -301,6 +322,7 @@ void Game::render() {
         // Render pause menu
         gameBackground->render(renderer);
         player->render(renderer);
+		livesManager->render(10, 10);
         alienSwarm->render(renderer);
         for (Bullet* bullet : bullets) {
             bullet->render(renderer);
@@ -314,6 +336,8 @@ void Game::render() {
     case GameState::GAME_OVER:
         // Render game over screen elements
         quitButton->render(renderer);
+		pauseGoToMenuButton->render(renderer);
+		replayButton->render(renderer);
         break;
 	case GameState::HIGHSCORE:
 		// Render highscore screen elements

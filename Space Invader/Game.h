@@ -56,7 +56,9 @@ private:
     Button* quitButton = nullptr;
 	HighScore* highScore = nullptr;
     Button* goToMenuButton = nullptr; 
+    Button* pauseGoToMenuButton = nullptr;
 	Button* scoreButton = nullptr;
+	Button* replayButton = nullptr;
     Player* player = nullptr;
     TTF_Font* gameFont = nullptr;
     TTF_Font* scoreFont = nullptr;

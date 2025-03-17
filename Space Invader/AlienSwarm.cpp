@@ -62,16 +62,6 @@ void AlienSwarm::update(float deltaTime) {
             --i; // Adjust index after erasing
         }
     }
-
-    //// Update bullet (remove if hit player or go out of screen)
-    //for (size_t i = 0; i < enemiesBullets.size(); ++i) {
-    //    enemiesBullets[i]->update(deltaTime);
-    //    if (enemiesBullets[i]->shouldRemove) { 
-    //        delete enemiesBullets[i];
-    //        enemiesBullets.erase(enemiesBullets.begin() + i);
-    //        --i; // Adjust index after erasing
-    //    }
-    //}
 }
 
 
@@ -102,7 +92,7 @@ void AlienSwarm::reset() {
         for (int col = 0; col < cols; ++col) {
             int x = startX + col * (alienWidth + hPadding);
             int y = startY + row * (alienHeight + hPadding);
-            Alien* newAlien = new Alien(x, y, alienWidth, alienHeight, "Resource/alien.png", renderer);
+            Alien* newAlien = new Alien(x, y, alienWidth, alienHeight, "Resource/alien_spritesheet.png", renderer, 2);
             newAlien->setSpeed(currentSpeed); 
             aliens.push_back(newAlien);
         }
