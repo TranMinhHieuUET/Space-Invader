@@ -15,7 +15,6 @@ public:
     void moveDown(int amount); //This is to move down
     bool shouldRemove = false;
     void setSpeed(float newSpeed) { speed = newSpeed; }
-    float getSpeed() { return speed; }
 	void render(SDL_Renderer* renderer) override;
     
 private:

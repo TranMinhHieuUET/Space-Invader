@@ -120,3 +120,7 @@ void AlienSwarm::shoot() {
     int bulletY = shooter->getRect().y + shooter->getRect().h;
     enemiesBullets.push_back(new Bullet(bulletX, bulletY, 20, 20, "Resource/alien_bullet.png", renderer, 400)); // Adjust size and speed
 }
+
+void AlienSwarm::increaseShootingSpeed(float increase) {
+	shootInterval -= increase;
+}

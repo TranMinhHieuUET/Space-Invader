@@ -18,6 +18,7 @@ public:
     std::vector<Alien*>& getAliens() { return aliens; }
     void increaseSpeed(float increase); 
     void shoot();
+    void increaseShootingSpeed(float increase);
 
 private:
     std::vector<Alien*> aliens;

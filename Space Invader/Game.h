@@ -5,15 +5,6 @@
 #include <SDL_image.h>
 #include <string>
 #include <SDL_ttf.h>
-
-class Button;
-class Player;
-class Background;
-class Alien;
-class Score;
-class LivesManager;
-class HighScore;
-
 #include "Player.h"
 #include "Background.h"
 #include "Button.h" 
@@ -23,6 +14,14 @@ class HighScore;
 #include "Score.h"
 #include "LivesManager.h"
 #include "HighScore.h"
+
+class Button;
+class Player;
+class Background;
+class Alien;
+class Score;
+class LivesManager;
+class HighScore;
 
 class Game {
 public:

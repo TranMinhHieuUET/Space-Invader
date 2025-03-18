@@ -14,3 +14,7 @@ void Bullet::update(float deltaTime) {
         shouldRemove = true;
     }
 }
+
+void Bullet::Bullet::increaseSpeed(float increase) {
+	speed += increase;
+}

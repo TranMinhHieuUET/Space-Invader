@@ -10,8 +10,8 @@ public:
     ~Bullet() override;
 
     void update(float deltaTime) override;
-
     bool shouldRemove = false; // Flag for removal
+    void increaseSpeed(float increase);
 
 private:
     int speed;

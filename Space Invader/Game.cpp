@@ -251,6 +251,7 @@ void Game::update() {
         {
             alienSwarm->increaseSpeed(0.1f); // Increase speed
             alienSwarm->reset(); // Spawn new swarm
+			alienSwarm->increaseShootingSpeed(0.1f); // Increase shooting speed
         }
 
         //check if aliens reached the bottom

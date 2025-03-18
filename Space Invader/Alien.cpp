@@ -44,7 +44,7 @@ void Alien::moveDown(int amount)
     rect.y += amount;
 
     // Increase alien speed everytime it move down
-    speed += 10.0f;
+    speed += 15.0f;
 }
 
 void Alien::setDirection(int newDirection) {
