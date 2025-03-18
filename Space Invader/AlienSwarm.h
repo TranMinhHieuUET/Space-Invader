@@ -19,6 +19,10 @@ public:
     void increaseSpeed(float increase); 
     void shoot();
     void increaseShootingSpeed(float increase);
+    void increaseResetCounter();
+    void resetResetCounter() { swarmResetCounter = 0; };
+	void increaseNumOfShooter();
+    void resetNumOfShooter() { numOfShooter = 1; };
 
 private:
     std::vector<Alien*> aliens;
@@ -30,5 +34,7 @@ private:
     float baseAlienSpeed;     
     float timeSinceLastShot;
     float shootInterval;
+	int swarmResetCounter;
+    int numOfShooter;
 };
 #endif

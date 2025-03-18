@@ -13,7 +13,7 @@ static int startX = 50;
 static int startY = 50;
 
 AlienSwarm::AlienSwarm(SDL_Renderer* renderer, std::vector<Bullet*>& enemiesBullets) : renderer(renderer), horizontalDirection(1), moveDownDistance(50), baseAlienSpeed(100.0f),
-                                                 speedMultiplier(1.0f), timeSinceLastShot(0.0f), shootInterval(2.0f), enemiesBullets(enemiesBullets)
+speedMultiplier(1.0f), timeSinceLastShot(0.0f), shootInterval(2.0f), enemiesBullets(enemiesBullets), swarmResetCounter(0), numOfShooter(1)
 {
     reset(); // Initialize the aliens
 }
@@ -110,17 +110,33 @@ void AlienSwarm::shoot() {
         return; 
     }
 
-    // Create random index to choose an alien to shoot from
-    srand(time(0));
-    int shooterIndex = rand() % (aliens.size());
-    Alien* shooter = aliens[shooterIndex];
+    srand(static_cast<unsigned int>(time(0))); // Seed random number generator
 
-    // Create a bullet at the alien's position
-    int bulletX = shooter->getRect().x + shooter->getRect().w / 2 - 10; // Center bullet
-    int bulletY = shooter->getRect().y + shooter->getRect().h;
-    enemiesBullets.push_back(new Bullet(bulletX, bulletY, 20, 20, "Resource/alien_bullet.png", renderer, 400)); // Adjust size and speed
+    // Alien shooting
+	for (int i = 0; i < numOfShooter; i++) {
+        // Create random index to choose an alien to shoot from
+        int shooterIndex = rand() % (aliens.size());
+        Alien* shooter = aliens[shooterIndex];
+
+        // Create a bullet at the alien's position
+        int bulletX = shooter->getRect().x + shooter->getRect().w / 2 - 10; // Center bullet
+        int bulletY = shooter->getRect().y + shooter->getRect().h;
+        enemiesBullets.push_back(new Bullet(bulletX, bulletY, 20, 20, "Resource/alien_bullet.png", renderer, 400)); // Adjust size and speed
+	}
 }
 
 void AlienSwarm::increaseShootingSpeed(float increase) {
 	shootInterval -= increase;
+}
+
+void AlienSwarm::increaseResetCounter() {
+	swarmResetCounter++;
+}
+
+void AlienSwarm::increaseNumOfShooter() {
+    // Calculate number of shooters
+    if (swarmResetCounter == 2 && numOfShooter < 15) {
+        numOfShooter++;
+        swarmResetCounter = 0;
+    }
 }

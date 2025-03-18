@@ -158,11 +158,6 @@ void Game::handleEvents() {
             break;
         case GameState::GAME_OVER:
             // Handle game over input 
-            if (!scoreAdded) {
-                highScore->addScore(score->getScore());
-                highScore->save();
-                scoreAdded = true;
-            }
 			pauseGoToMenuButton->handleEvent(event);
             quitButton->handleEvent(event);
 			replayButton->handleEvent(event);
@@ -195,10 +190,15 @@ void Game::update() {
         }
         enemiesBullets.clear();
         alienSwarm->reset(); // This is so that when go from pause to menu then play again, the alien swarm will reset
+		alienSwarm->resetResetCounter(); // Reset the reset counter
+		alienSwarm->resetNumOfShooter(); // Reset the number of shooter
         score->reset(); // The same for score
 		livesManager->reset(); // The same for lives  
         break;
     case GameState::PLAYING: {
+        // Update high score flag
+		scoreAdded = false;
+
         // Update player and alien
         player->update(deltaTime);
         alienSwarm->update(deltaTime); 
@@ -249,9 +249,11 @@ void Game::update() {
         // Create new alien swarm when previous is defeated
         if (alienSwarm->getAliens().empty())
         {
+			alienSwarm->increaseResetCounter(); // Increase the reset counter
             alienSwarm->increaseSpeed(0.1f); // Increase speed
             alienSwarm->reset(); // Spawn new swarm
 			alienSwarm->increaseShootingSpeed(0.1f); // Increase shooting speed
+			alienSwarm->increaseNumOfShooter(); // Increase number of shooters (if reset counter is 2 and the numOfShooter is less than 15)
         }
 
         //check if aliens reached the bottom
@@ -284,8 +286,13 @@ void Game::update() {
         }
         enemiesBullets.clear();
         alienSwarm->reset(); // This is so that when go from pause to menu then play again, the alien swarm will reset
-        score->reset(); // The same for score
         livesManager->reset(); // The same for lives  
+        if (!scoreAdded) {
+            highScore->addScore(score->getScore());
+            highScore->save();
+            scoreAdded = true;
+        }
+        score->reset();
         break;
     }
     lastFrameTime = currentFrameTime;
