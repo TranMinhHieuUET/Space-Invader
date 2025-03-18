@@ -13,7 +13,11 @@ public:
 
     void update(float deltaTime) override;
     void handleEvent(const SDL_Event& event);
-    void resetPosition(); // Add this
+    void resetPosition(); 
+	bool isInvincible; // Flag for invincibility
+    float invincibilityTime;      // Timer for invincibility
+	void render(SDL_Renderer* renderer) override;
+
 private:
     std::vector<Bullet*>& bullets; // Reference to the game's bullets
     float posX;
@@ -24,6 +28,10 @@ private:
     int initialY; //  Store initial Y position
     int moveDirection; // -1 for left, 1 for right, 0 for no movement
     bool isSpacebarDown;
+    float invincibilityDuration;  // How long invincibility lasts 
+    bool showSprite;             // For flickering
+    float flickerTimer;
+    float flickerInterval;
     SDL_Renderer* renderer;
 };
 

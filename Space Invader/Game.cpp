@@ -237,12 +237,16 @@ void Game::update() {
         }
 
         // Collision detection (bullets and player)
-        for (int i = 0; i < enemiesBullets.size(); i++) {
-            if (enemiesBullets[i]->isColliding(*player)) {
-                enemiesBullets[i]->shouldRemove = true;
-                livesManager->loseLife();
-                // Increase score, play sound, etc.
-                break; // Break after a collision
+        if (player->isInvincible == false) {
+            for (int i = 0; i < enemiesBullets.size(); i++) {
+                if (enemiesBullets[i]->isColliding(*player)) {
+                    enemiesBullets[i]->shouldRemove = true;
+                    livesManager->loseLife();
+                    player->isInvincible = true;
+                    player->invincibilityTime = 0.0f;
+                    // Increase score, play sound, etc.
+                    break; // Break after a collision
+                }
             }
         }
 
