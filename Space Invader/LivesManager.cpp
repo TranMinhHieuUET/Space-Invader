@@ -47,7 +47,13 @@ void LivesManager::render(int x, int y) {
     SDL_DestroyTexture(texture);
     SDL_FreeSurface(surface);
 }
+
 void LivesManager::reset()
 {
     lives = 3; 
+}
+
+void LivesManager::addLife()
+{
+	lives++;
 }

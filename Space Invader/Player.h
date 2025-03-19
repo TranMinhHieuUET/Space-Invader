@@ -11,9 +11,10 @@ public:
     Player(int x, int y, int w, int h, const std::string& texturePath, SDL_Renderer* renderer, int speed, std::vector<Bullet*>& bullets);
     ~Player() override;
 
+	int speed; // Public so that we can change it in Game.cpp
+	float shootCooldown; // Public so that we can change it in Game.cpp
     void update(float deltaTime) override;
     void handleEvent(const SDL_Event& event);
-    void resetPosition(); 
 	bool isInvincible; // Flag for invincibility
     float invincibilityTime;      // Timer for invincibility
 	void render(SDL_Renderer* renderer) override;
@@ -21,8 +22,6 @@ public:
 private:
     std::vector<Bullet*>& bullets; // Reference to the game's bullets
     float posX;
-    int speed;
-    float shootCooldown;
     float lastShootTime;
     int initialX;  // Store initial X position
     int initialY; //  Store initial Y position

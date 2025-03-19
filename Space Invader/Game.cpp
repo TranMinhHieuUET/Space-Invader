@@ -123,7 +123,7 @@ void Game::initializeAll() {
 	highScore = new HighScore("highScore.txt", scoreFont, renderer);
 	highScore->load();
 
-    // Initialize player ship and alien
+    // Initialize player ship and alien and powerup
     player = new Player(centeredX, 850, 100, 100, "Resource/player.png", renderer, 400, bullets);
     alienSwarm = new AlienSwarm(renderer, enemiesBullets);
     livesManager = new LivesManager(3, gameFont, renderer);
@@ -227,6 +227,13 @@ void Game::update() {
         for (int i = 0; i < bullets.size(); i++) {
             for (int j = 0; j < alienSwarm->getAliens().size(); j++) {
                 if (bullets[i]->isColliding(*alienSwarm->getAliens()[j])) {
+                    // Spawn power-up (with null check!)
+                    PowerUp* newPowerUp = PowerUp::spawnPowerUp(alienSwarm->getAliens()[j]->getRect().x,
+                        alienSwarm->getAliens()[j]->getRect().y,
+                        renderer);
+                    if (newPowerUp != nullptr) {
+                        powerUps.push_back(newPowerUp);
+                    }
                     bullets[i]->shouldRemove = true;
                     alienSwarm->getAliens()[j]->shouldRemove = true;
                     score->increaseScore(10);
@@ -246,6 +253,44 @@ void Game::update() {
                     player->invincibilityTime = 0.0f;
                     // Increase score, play sound, etc.
                     break; // Break after a collision
+                }
+            }
+        }
+
+        // --- Power-up Updates and Collisions ---
+        for (size_t i = 0; i < powerUps.size(); ++i) {
+            if (powerUps[i]) { // Always check for null, even with previous checks
+                powerUps[i]->update(deltaTime);
+
+                // Collision detection with player
+                if (powerUps[i]->isColliding(*player)) {
+                    // Apply power-up effect
+                    switch (powerUps[i]->getType()) {
+                        case PowerUp::Type::EXTRA_LIFE:
+							livesManager->addLife();
+							break;
+						case PowerUp::Type::SPEED_BOOST:
+							player->speed += 50;
+							break;
+						case PowerUp::Type::RAPID_FIRE:
+							player->shootCooldown -= 0.01f;
+							break;
+						case PowerUp::Type::INVINCIBILITY:
+							player->isInvincible = true;
+							player->invincibilityTime = 0.0f;
+							break;
+                    }
+                    delete powerUps[i];  // Delete the power-up
+                    powerUps.erase(powerUps.begin() + i);
+                    --i; // Adjust index
+                    continue; // Skip to the next power-up
+                }
+
+                // Remove power-up if it should be removed 
+                if (powerUps[i]->shouldRemove) {
+                    delete powerUps[i];     // Delete the power-up
+                    powerUps.erase(powerUps.begin() + i);
+                    --i; // Adjust index
                 }
             }
         }
@@ -321,6 +366,9 @@ void Game::render() {
         gameBackground->render(renderer);
         player->render(renderer);
         alienSwarm->render(renderer); 
+		for (PowerUp* powerUp : powerUps) {
+			powerUp->render(renderer);
+		}
         for (Bullet* bullet : bullets) {
             bullet->render(renderer);
         }

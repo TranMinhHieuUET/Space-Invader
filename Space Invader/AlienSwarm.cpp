@@ -110,8 +110,6 @@ void AlienSwarm::shoot() {
         return; 
     }
 
-    srand(static_cast<unsigned int>(time(0))); // Seed random number generator
-
     // Alien shooting
 	for (int i = 0; i < numOfShooter; i++) {
         // Create random index to choose an alien to shoot from

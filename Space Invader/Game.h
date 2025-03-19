@@ -14,6 +14,7 @@
 #include "Score.h"
 #include "LivesManager.h"
 #include "HighScore.h"
+#include "PowerUp.h"
 
 class Button;
 class Player;
@@ -22,6 +23,7 @@ class Alien;
 class Score;
 class LivesManager;
 class HighScore;
+class PowerUp;
 
 class Game {
 public:
@@ -66,8 +68,10 @@ private:
     AlienSwarm* alienSwarm = nullptr;
     LivesManager* livesManager = nullptr;
     bool scoreAdded;
+    bool resetPlayerPosition = false;
     std::vector<Bullet*> bullets; 
     std::vector<Bullet*> enemiesBullets;
+	std::vector<PowerUp*> powerUps;
     Score* score = nullptr;
     void initializeAll();
 };

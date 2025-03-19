@@ -16,6 +16,8 @@ public:
     bool shouldRemove = false;
     void setSpeed(float newSpeed) { speed = newSpeed; }
 	void render(SDL_Renderer* renderer) override;
+	int getX() { return rect.x; }
+	int getY() { return rect.y; }
     
 private:
     float posX;

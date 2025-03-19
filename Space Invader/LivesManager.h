@@ -13,6 +13,7 @@ public:
     bool isGameOver() const;
     void render(int x, int y);
     void reset();
+	void addLife();
 
 private:
     int lives;

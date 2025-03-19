@@ -95,8 +95,3 @@ void Player::handleEvent(const SDL_Event& event) {
         }
     }
 }
-
-void Player::resetPosition() {
-    rect.x = initialX;
-    rect.y = initialY;
-}
