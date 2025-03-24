@@ -24,12 +24,15 @@ class Score;
 class LivesManager;
 class HighScore;
 class PowerUp;
+class AlienSwarm;
 
 class Game {
 public:
     enum class GameState {
         MENU,
-        PLAYING,
+        CHOOSE_MODE,
+		SINGLE,
+		DUO,
         PAUSE,
         GAME_OVER,
         HIGHSCORE
@@ -45,6 +48,8 @@ public:
     void setGameState(GameState newState) { currentState = newState; };
     void setRunning(bool running) { isRunning = running; };
     SDL_Renderer* getRenderer() { return renderer; }
+    bool singlePlayer = true;
+    bool resetPlayerPosition = false;
 
 private:
     bool isRunning;
@@ -60,15 +65,25 @@ private:
     Button* pauseGoToMenuButton = nullptr;
 	Button* scoreButton = nullptr;
 	Button* replayButton = nullptr;
-    Player* player = nullptr;
+    Button* singleButton = nullptr;
+	Button* duoButton = nullptr;
+	Button* P1Win = nullptr;
+	Button* P2Win = nullptr;
+	SDL_Rect* border = nullptr;
+    Player* player1 = nullptr;
+	Player* player2 = nullptr;
     TTF_Font* gameFont = nullptr;
     TTF_Font* scoreFont = nullptr;
     Background* startBackground = nullptr;
     Background* gameBackground = nullptr;
-    AlienSwarm* alienSwarm = nullptr;
-    LivesManager* livesManager = nullptr;
+    AlienSwarm* alienSwarm1 = nullptr;
+    AlienSwarm* alienSwarm2 = nullptr;
+    LivesManager* livesManager1 = nullptr;
+    LivesManager* livesManager2 = nullptr;
     bool scoreAdded;
-    bool resetPlayerPosition = false;
+	bool sizeChanged = false;
+    bool player1win = false;
+    bool initialResetSwarm = false;
     std::vector<Bullet*> bullets; 
     std::vector<Bullet*> enemiesBullets;
 	std::vector<PowerUp*> powerUps;

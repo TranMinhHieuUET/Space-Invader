@@ -3,17 +3,14 @@
 #include "Alien.h"
 #include "Bullet.h"
 #include <stdlib.h>
+#include "Game.h"
 
-static int rows = 5;
-static int cols = 11;
-static int alienWidth = 78;
-static int alienHeight = 66;
-static int hPadding = 10;
-static int startX = 50;
-static int startY = 50;
+static int alienWidth = 39;
+static int alienHeight = 33;
+static int hPadding = 5;
 
-AlienSwarm::AlienSwarm(SDL_Renderer* renderer, std::vector<Bullet*>& enemiesBullets) : renderer(renderer), horizontalDirection(1), moveDownDistance(50), baseAlienSpeed(100.0f),
-speedMultiplier(1.0f), timeSinceLastShot(0.0f), shootInterval(2.0f), enemiesBullets(enemiesBullets), swarmResetCounter(0), numOfShooter(1)
+AlienSwarm::AlienSwarm(SDL_Renderer* renderer, std::vector<Bullet*>& enemiesBullets, Game* game, bool isP1) : renderer(renderer), horizontalDirection(1), moveDownDistance(50), 
+baseAlienSpeed(80.0f), speedMultiplier(1.0f), timeSinceLastShot(0.0f), shootInterval(2.0f), enemiesBullets(enemiesBullets), swarmResetCounter(0), numOfShooter(1), game(game), isP1(isP1)
 {
     reset(); // Initialize the aliens
 }
@@ -41,8 +38,23 @@ void AlienSwarm::update(float deltaTime) {
     for (Alien* alien : aliens) {
         alien->setDirection(horizontalDirection);
         alien->update(deltaTime);
-        if ((alien->getRect().x + alien->getRect().w > 1710 && horizontalDirection == 1) || (alien->getRect().x < 0 && horizontalDirection == -1)) { // Check if reach edge
-            edgeReached = true; // Set the edgeReached = true;
+        // Keep within bounds (for single and duo player)
+        if (game->singlePlayer == true) {
+            if ((alien->getRect().x + alien->getRect().w > 1710 && horizontalDirection == 1) || (alien->getRect().x < 0 && horizontalDirection == -1)) { // Check if reach edge
+                edgeReached = true; // Set the edgeReached = true;
+            }
+        }
+        else {
+            if (isP1 == true) {
+                if ((alien->getRect().x + alien->getRect().w > 855 && horizontalDirection == 1) || (alien->getRect().x < 0 && horizontalDirection == -1)) { // Check if reach edge
+                    edgeReached = true; // Set the edgeReached = true;
+                }
+            }
+            else {
+				if ((alien->getRect().x + alien->getRect().w > 1710 && horizontalDirection == 1) || (alien->getRect().x < 855 && horizontalDirection == -1)) { // Check if reach edge
+					edgeReached = true; // Set the edgeReached = true;
+				}
+            }
         }
     }
 
@@ -88,15 +100,33 @@ void AlienSwarm::reset() {
     float currentSpeed = baseAlienSpeed * speedMultiplier; 
 
     // Create new aliens
+    int startX;
+    int rows, cols;
+    if (game->singlePlayer == true) {
+        startX = 50;
+        rows = 5;
+        cols = 10;
+    }
+    else {
+        rows = 4;
+        cols = 9;
+		if (isP1 == true) {
+			startX = 0;
+		}
+		else {
+			startX = 855;
+		}
+    }
     for (int row = 0; row < rows; ++row) {
         for (int col = 0; col < cols; ++col) {
             int x = startX + col * (alienWidth + hPadding);
-            int y = startY + row * (alienHeight + hPadding);
+            int y = 50 + row * (alienHeight + hPadding);
             Alien* newAlien = new Alien(x, y, alienWidth, alienHeight, "Resource/alien_spritesheet.png", renderer, 2);
-            newAlien->setSpeed(currentSpeed); 
+            newAlien->setSpeed(currentSpeed);
             aliens.push_back(newAlien);
         }
     }
+        
     horizontalDirection = 1;
 }
 

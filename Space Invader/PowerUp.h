@@ -29,6 +29,6 @@ public:
 
 private:
     Type type;
-    float fallSpeed = 300.0f;  // Speed at which the power-up falls
+    float fallSpeed = 150.0f;  // Speed at which the power-up falls
 };
 #endif

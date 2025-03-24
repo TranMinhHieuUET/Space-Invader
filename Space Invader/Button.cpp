@@ -64,7 +64,7 @@ void Button::handleEvent(const SDL_Event& event) {
         if (isHovered && event.type == SDL_MOUSEBUTTONDOWN && event.button.button == SDL_BUTTON_LEFT) {
             switch (type) {
             case ButtonType::START:
-                game->setGameState(Game::GameState::PLAYING); // Move from menu to play screen
+                game->setGameState(Game::GameState::CHOOSE_MODE); // Move from pause to choosing single or duo
                 break;
             case ButtonType::QUIT:
                 game->setRunning(false); // Quit the game
@@ -75,6 +75,22 @@ void Button::handleEvent(const SDL_Event& event) {
 			case ButtonType::SCORE:
 				game->setGameState(Game::GameState::HIGHSCORE); // Move from menu to score screen
                 break;
+            case ButtonType::REPLAY:
+                if (game->singlePlayer == true) {
+                    game->setGameState(Game::GameState::SINGLE); // Move from game over to single player game
+				}
+				else {
+					game->setGameState(Game::GameState::DUO); // Move from game over to duo player game
+				}
+				break;
+            case ButtonType::SINGLEPLAYER:
+				game->singlePlayer = true; // Set single player mode
+				game->setGameState(Game::GameState::SINGLE); // Move from choosing mode to single player game
+				break;
+			case ButtonType::DUOPLAYER:
+				game->singlePlayer = false; // Set duo player mode
+				game->setGameState(Game::GameState::DUO); // Move from choosing mode to duo player game
+				break;
             }
         }
     }

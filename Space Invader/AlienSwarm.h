@@ -6,10 +6,13 @@
 #include "GameObjects.h"
 #include "Bullet.h"
 #include <stdlib.h>
+#include "Game.h"
+
+class Game;
 
 class AlienSwarm {
 public:
-    AlienSwarm(SDL_Renderer* renderer, std::vector<Bullet*>& enemiesBullets);
+    AlienSwarm(SDL_Renderer* renderer, std::vector<Bullet*>& enemiesBullets, Game* game, bool isP1);
     ~AlienSwarm();
 
     void update(float deltaTime);
@@ -36,5 +39,7 @@ private:
     float shootInterval;
 	int swarmResetCounter;
     int numOfShooter;
+    Game* game;
+	bool isP1;
 };
 #endif

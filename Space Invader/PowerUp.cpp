@@ -25,7 +25,7 @@ void PowerUp::render(SDL_Renderer* renderer) {
 }
 
 PowerUp* PowerUp::spawnPowerUp(int x, int y, SDL_Renderer* renderer) {
-    // Random chance (e.g., 20%)
+    // Random chance (20%)
     if (rand() % 100 < 20) {
         // Choose a random power-up type
         int randIndex = rand() % 4;

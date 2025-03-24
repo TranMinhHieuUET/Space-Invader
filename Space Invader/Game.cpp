@@ -25,8 +25,15 @@ Game::~Game() {
     delete startBackground;
     delete gameBackground;
 	delete pauseGoToMenuButton;
-    delete player;
-    delete alienSwarm;
+	delete singleButton;
+	delete duoButton;
+    delete border;
+	delete P1Win;
+	delete P2Win;
+    delete player1;
+    delete player2;
+    delete alienSwarm1;
+	delete alienSwarm2;
     if (!bullets.empty()) {
         for (Bullet* bullet : bullets) {
             delete bullet;
@@ -37,7 +44,8 @@ Game::~Game() {
         delete bullet;
     }
     enemiesBullets.clear();
-    delete livesManager;
+    delete livesManager1;
+    delete livesManager2;
 	delete highScore;
     delete score;
 }
@@ -89,13 +97,13 @@ bool Game::init(const char* title, int xpos, int ypos, int width, int height, bo
 
 void Game::initializeAll() {
     // Calculate button positions
-    int centeredX = (windowWidth - buttonWidth) / 2;
-	int centeredY = (windowHeight - buttonHeight) / 2;
+    int centeredX = (windowWidth - buttonWidth) / 2; // Centered for button only
+	int centeredY = (windowHeight - buttonHeight) / 2; // Centered for button only
     int menuButtonsY = 750;
     int startButtonX = centeredX - buttonWidth - 100;
     int scoreButtonX = centeredX;
     int quitButtonX = centeredX + buttonWidth + 100;
-    int goToMenuButtonX = 100;
+    int goToMenuButtonX = centeredX - buttonWidth - 100;
 	
 
     // Initialize the background
@@ -105,10 +113,19 @@ void Game::initializeAll() {
     // Initialize the buttons
     startButton = new Button(startButtonX, menuButtonsY, buttonWidth, buttonHeight, "Resource/start_button.png", this, Button::ButtonType::START);
     quitButton = new Button(quitButtonX, menuButtonsY, buttonWidth, buttonHeight, "Resource/quit_button.png", this, Button::ButtonType::QUIT);
-    goToMenuButton = new Button(centeredX, centeredY, buttonWidth, buttonHeight, "Resource/go_to_menu_button.png", this, Button::ButtonType::GO_TO_MENU);
+    goToMenuButton = new Button(goToMenuButtonX, menuButtonsY, buttonWidth, buttonHeight, "Resource/go_to_menu_button.png", this, Button::ButtonType::GO_TO_MENU);
 	scoreButton = new Button(scoreButtonX, menuButtonsY, buttonWidth, buttonHeight, "Resource/highscore_button.png", this, Button::ButtonType::SCORE);
-	pauseGoToMenuButton = new Button(startButtonX, menuButtonsY, buttonWidth, buttonHeight, "Resource/go_to_menu_button.png", this, Button::ButtonType::GO_TO_MENU);
-	replayButton = new Button(centeredX, menuButtonsY, buttonWidth, buttonHeight, "Resource/replay_button.png", this, Button::ButtonType::START);
+	pauseGoToMenuButton = new Button(centeredX, centeredY, buttonWidth, buttonHeight, "Resource/go_to_menu_button.png", this, Button::ButtonType::GO_TO_MENU);
+	replayButton = new Button(centeredX, menuButtonsY, buttonWidth, buttonHeight, "Resource/replay_button.png", this, Button::ButtonType::REPLAY);
+	singleButton = new Button(startButtonX, centeredY, buttonWidth, buttonHeight, "Resource/1_player.png", this, Button::ButtonType::SINGLEPLAYER);
+	duoButton = new Button(quitButtonX, centeredY, buttonWidth, buttonHeight, "Resource/2_player.png", this, Button::ButtonType::DUOPLAYER);
+	P1Win = new Button((windowWidth - 600)/2, (windowHeight - 300) / 2, 600, 300, "Resource/P1_win.png", this, Button::ButtonType::NONE);
+	P2Win = new Button((windowWidth - 600) / 2, (windowHeight - 300) / 2, 600, 300, "Resource/P2_win.png", this, Button::ButtonType::NONE);
+    border = new SDL_Rect;
+	border->x = 850;
+	border->y = 0;
+	border->w = 10;
+	border->h = windowHeight;
 
     // Initialize font, high score class and score counter
     gameFont = TTF_OpenFont("Resource/ARCADECLASSIC.ttf", 28);
@@ -124,9 +141,12 @@ void Game::initializeAll() {
 	highScore->load();
 
     // Initialize player ship and alien and powerup
-    player = new Player(centeredX, 850, 100, 100, "Resource/player.png", renderer, 400, bullets);
-    alienSwarm = new AlienSwarm(renderer, enemiesBullets);
-    livesManager = new LivesManager(3, gameFont, renderer);
+    player1 = new Player(300, 900, 60, 60, "Resource/player1.png", renderer, 300, bullets, SDLK_a, SDLK_d, SDLK_SPACE, true, this);
+    player2 = new Player(900, 900, 60, 60, "Resource/player2.png", renderer, 300, bullets, SDLK_LEFT, SDLK_RIGHT, SDLK_KP_ENTER, false, this);
+    alienSwarm1 = new AlienSwarm(renderer, enemiesBullets, this, true);
+    alienSwarm2 = new AlienSwarm(renderer, enemiesBullets, this, false);
+    livesManager1 = new LivesManager(3, gameFont, renderer);
+    livesManager2 = new LivesManager(3, gameFont, renderer);
 }
 
 void Game::handleEvents() {
@@ -142,23 +162,40 @@ void Game::handleEvents() {
             quitButton->handleEvent(event);  
 			scoreButton->handleEvent(event);
             break;
-        case GameState::PLAYING:
+		case GameState::CHOOSE_MODE:
+			// Handle choose mode input
+			singleButton->handleEvent(event);
+			duoButton->handleEvent(event);
+        case GameState::SINGLE:
             // Handle gameplay input 
             if (event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_ESCAPE) {
                 currentState = GameState::PAUSE;
             }
-            player->handleEvent(event);
+            player1->handleEvent(event);
+            break;
+		case GameState::DUO:
+			// Handle gameplay input
+            if (event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_ESCAPE) {
+                currentState = GameState::PAUSE;
+            }
+            player1->handleEvent(event);
+			player2->handleEvent(event);
             break;
         case GameState::PAUSE:
             // Handle pause menu input
             if (event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_ESCAPE) {
-                currentState = GameState::PLAYING; // Go back to playing
+                if (singlePlayer == true) {
+                    currentState = GameState::SINGLE;
+                }
+                else {
+                    currentState = GameState::DUO;
+                }
             }
-            goToMenuButton->handleEvent(event);
+            pauseGoToMenuButton->handleEvent(event);
             break;
         case GameState::GAME_OVER:
             // Handle game over input 
-			pauseGoToMenuButton->handleEvent(event);
+			goToMenuButton->handleEvent(event);
             quitButton->handleEvent(event);
 			replayButton->handleEvent(event);
             break;
@@ -189,19 +226,47 @@ void Game::update() {
             delete bullet;
         }
         enemiesBullets.clear();
-        alienSwarm->reset(); // This is so that when go from pause to menu then play again, the alien swarm will reset
-		alienSwarm->resetResetCounter(); // Reset the reset counter
-		alienSwarm->resetNumOfShooter(); // Reset the number of shooter
+        // Reset the alien swarms
+        if (initialResetSwarm == true) {
+            alienSwarm1->reset();
+            alienSwarm1->resetResetCounter();
+            alienSwarm1->resetNumOfShooter();
+            alienSwarm2->reset();
+            alienSwarm2->resetResetCounter();
+            alienSwarm2->resetNumOfShooter();
+			initialResetSwarm = false;
+        }
         score->reset(); // The same for score
-		livesManager->reset(); // The same for lives  
+		livesManager1->reset(); // The same for P1 lives  
+		livesManager2->reset(); // The same for P2 lives
+        if (resetPlayerPosition == true) {
+			resetPlayerPosition = false;
+        }
         break;
-    case GameState::PLAYING: {
+    case GameState::SINGLE: {
         // Update high score flag
 		scoreAdded = false;
 
+        // Reset the alien swarms
+        if (initialResetSwarm == false) {
+            alienSwarm1->reset();
+            alienSwarm1->resetResetCounter();
+            alienSwarm1->resetNumOfShooter();
+            initialResetSwarm = true;
+        }
+
+        // Reset player to initial position in single mode
+        if (resetPlayerPosition == false) {
+            player1->setPosition(825);
+            resetPlayerPosition = true;
+        }
+
         // Update player and alien
-        player->update(deltaTime);
-        alienSwarm->update(deltaTime); 
+        player1->update(deltaTime);
+        alienSwarm1->update(deltaTime); 
+
+        // Handle shooting (put in update so that can fire by holding shoot key)
+        player1->shoot();
 
         // Update player bullets
         for (size_t i = 0; i < bullets.size(); ++i) {
@@ -225,17 +290,17 @@ void Game::update() {
 
         // Collision detection (bullets and aliens)
         for (int i = 0; i < bullets.size(); i++) {
-            for (int j = 0; j < alienSwarm->getAliens().size(); j++) {
-                if (bullets[i]->isColliding(*alienSwarm->getAliens()[j])) {
+            for (int j = 0; j < alienSwarm1->getAliens().size(); j++) {
+                if (bullets[i]->isColliding(*alienSwarm1->getAliens()[j])) {
                     // Spawn power-up (with null check!)
-                    PowerUp* newPowerUp = PowerUp::spawnPowerUp(alienSwarm->getAliens()[j]->getRect().x,
-                        alienSwarm->getAliens()[j]->getRect().y,
+                    PowerUp* newPowerUp = PowerUp::spawnPowerUp(alienSwarm1->getAliens()[j]->getRect().x,
+                        alienSwarm1->getAliens()[j]->getRect().y,
                         renderer);
                     if (newPowerUp != nullptr) {
                         powerUps.push_back(newPowerUp);
                     }
                     bullets[i]->shouldRemove = true;
-                    alienSwarm->getAliens()[j]->shouldRemove = true;
+                    alienSwarm1->getAliens()[j]->shouldRemove = true;
                     score->increaseScore(10);
                     // Increase score, play sound, etc.
                     break; // Break after a collision
@@ -244,41 +309,41 @@ void Game::update() {
         }
 
         // Collision detection (bullets and player)
-        if (player->isInvincible == false) {
+        if (player1->isInvincible == false) {
             for (int i = 0; i < enemiesBullets.size(); i++) {
-                if (enemiesBullets[i]->isColliding(*player)) {
+                if (enemiesBullets[i]->isColliding(*player1)) {
                     enemiesBullets[i]->shouldRemove = true;
-                    livesManager->loseLife();
-                    player->isInvincible = true;
-                    player->invincibilityTime = 0.0f;
-					player->resetPosition();
+                    livesManager1->loseLife();
+                    player1->isInvincible = true;
+                    player1->invincibilityTime = 0.0f;
+					player1->setPosition(825);
                     // Increase score, play sound, etc.
                     break; // Break after a collision
                 }
             }
         }
 
-        // --- Power-up Updates and Collisions ---
+        // Power-up updates and collisions
         for (size_t i = 0; i < powerUps.size(); ++i) {
             if (powerUps[i]) { // Always check for null, even with previous checks
                 powerUps[i]->update(deltaTime);
 
                 // Collision detection with player
-                if (powerUps[i]->isColliding(*player)) {
+                if (powerUps[i]->isColliding(*player1)) {
                     // Apply power-up effect
                     switch (powerUps[i]->getType()) {
                         case PowerUp::Type::EXTRA_LIFE:
-							livesManager->addLife();
+							livesManager1->addLife();
 							break;
 						case PowerUp::Type::SPEED_BOOST:
-							player->speed += 50;
+							player1->speed += 50;
 							break;
 						case PowerUp::Type::RAPID_FIRE:
-							player->shootCooldown -= 0.01f;
+							player1->shootCooldown -= 0.01f;
 							break;
 						case PowerUp::Type::INVINCIBILITY:
-							player->isInvincible = true;
-							player->invincibilityTime = 0.0f;
+							player1->isInvincible = true;
+							player1->invincibilityTime = 0.0f;
 							break;
                     }
                     delete powerUps[i];  // Delete the power-up
@@ -297,33 +362,270 @@ void Game::update() {
         }
 
         // Create new alien swarm when previous is defeated
-        if (alienSwarm->getAliens().empty())
+        if (alienSwarm1->getAliens().empty())
         {
-			alienSwarm->increaseResetCounter(); // Increase the reset counter
-            alienSwarm->increaseSpeed(0.1f); // Increase speed
-            alienSwarm->reset(); // Spawn new swarm
-			alienSwarm->increaseShootingSpeed(0.1f); // Increase shooting speed
-			alienSwarm->increaseNumOfShooter(); // Increase number of shooters (if reset counter is 2 and the numOfShooter is less than 15)
+			alienSwarm1->increaseResetCounter(); // Increase the reset counter
+            alienSwarm1->increaseSpeed(0.1f); // Increase speed
+            alienSwarm1->reset(); // Spawn new swarm
+			alienSwarm1->increaseShootingSpeed(0.1f); // Increase shooting speed
+			alienSwarm1->increaseNumOfShooter(); // Increase number of shooters (if reset counter is 2 and the numOfShooter is less than 15)
         }
 
         //check if aliens reached the bottom
-        for (Alien* alien : alienSwarm->getAliens()) {
-            if (alien->getRect().y + alien->getRect().h >= player->getRect().y) {
+        for (Alien* alien : alienSwarm1->getAliens()) {
+            if (alien->getRect().y + alien->getRect().h >= player1->getRect().y) {
                 setGameState(GameState::GAME_OVER);
                 break;
             }
         }
 
         // Check if player's lives is 0
-        if (livesManager->isGameOver())
+        if (livesManager1->isGameOver())
         {
             setGameState(GameState::GAME_OVER);
         }
         break;
     } 
+    case GameState::DUO:
+		scoreAdded = true; // Update high score flag so that we don't count score for duo player
+
+		// Reset the alien swarms
+        if (initialResetSwarm == false) {
+            alienSwarm1->reset();
+            alienSwarm1->resetResetCounter();
+            alienSwarm1->resetNumOfShooter();
+            alienSwarm2->reset();
+            alienSwarm2->resetResetCounter();
+            alienSwarm2->resetNumOfShooter();
+            initialResetSwarm = true;
+        }
+
+		// Reset players to initial position in duo mode
+        if (resetPlayerPosition == false) {
+            player1->setPosition(397);
+            player2->setPosition(1252);
+			resetPlayerPosition = true;
+        }
+
+        // Update player and alien
+        player1->update(deltaTime);
+		player2->update(deltaTime);
+        alienSwarm1->update(deltaTime);
+		alienSwarm2->update(deltaTime);
+
+        // Handle shooting (put in update so that can fire by holding shoot key)
+        player1->shoot();
+		player2->shoot();
+
+        // Update player bullets
+        for (size_t i = 0; i < bullets.size(); ++i) {
+            bullets[i]->update(deltaTime);
+            if (bullets[i]->shouldRemove) {
+                delete bullets[i];
+                bullets.erase(bullets.begin() + i);
+                --i; // Adjust index after erasing
+            }
+        }
+
+        //Update enemy bullets
+        for (size_t i = 0; i < enemiesBullets.size(); ++i) {
+            enemiesBullets[i]->update(deltaTime);
+            if (enemiesBullets[i]->shouldRemove) {
+                delete enemiesBullets[i];
+                enemiesBullets.erase(enemiesBullets.begin() + i);
+                --i; // Adjust index after erasing
+            }
+        }
+
+        // Collision detection (bullets and aliens)
+        for (int i = 0; i < bullets.size(); i++) {
+            for (int j = 0; j < alienSwarm1->getAliens().size(); j++) {
+                if (bullets[i]->isColliding(*alienSwarm1->getAliens()[j])) {
+                    // Spawn power-up (with null check)
+                    PowerUp* newPowerUp = PowerUp::spawnPowerUp(alienSwarm1->getAliens()[j]->getRect().x,
+                        alienSwarm1->getAliens()[j]->getRect().y,
+                        renderer);
+                    if (newPowerUp != nullptr) {
+                        powerUps.push_back(newPowerUp);
+                    }
+                    bullets[i]->shouldRemove = true;
+                    alienSwarm1->getAliens()[j]->shouldRemove = true;
+                    // Increase score, play sound, etc.
+                    break; // Break after a collision
+                }
+            }
+        }
+        for (int i = 0; i < bullets.size(); i++) {
+            for (int j = 0; j < alienSwarm2->getAliens().size(); j++) {
+                if (bullets[i]->isColliding(*alienSwarm2->getAliens()[j])) {
+                    // Spawn power-up (with null check)
+                    PowerUp* newPowerUp = PowerUp::spawnPowerUp(alienSwarm2->getAliens()[j]->getRect().x,
+                        alienSwarm2->getAliens()[j]->getRect().y,
+                        renderer);
+                    if (newPowerUp != nullptr) {
+                        powerUps.push_back(newPowerUp);
+                    }
+                    bullets[i]->shouldRemove = true;
+                    alienSwarm2->getAliens()[j]->shouldRemove = true;
+                    // Increase score, play sound, etc.
+                    break; // Break after a collision
+                }
+            }
+        }
+
+        // Collision detection (bullets and player)
+        if (player1->isInvincible == false) {
+            for (int i = 0; i < enemiesBullets.size(); i++) {
+                if (enemiesBullets[i]->isColliding(*player1)) {
+                    enemiesBullets[i]->shouldRemove = true;
+                    livesManager1->loseLife();
+                    player1->isInvincible = true;
+                    player1->invincibilityTime = 0.0f;
+                    player1->setPosition(397);
+                    // Increase score, play sound, etc.
+                    break; // Break after a collision
+                }
+            }
+        }
+        if (player2->isInvincible == false) {
+            for (int i = 0; i < enemiesBullets.size(); i++) {
+                if (enemiesBullets[i]->isColliding(*player2)) {
+                    enemiesBullets[i]->shouldRemove = true;
+                    livesManager1->loseLife();
+                    player2->isInvincible = true;
+                    player2->invincibilityTime = 0.0f;
+                    player2->setPosition(1252);
+                    // Increase score, play sound, etc.
+                    break; // Break after a collision
+                }
+            }
+        }
+
+        // --- Power-up Updates and Collisions ---
+        for (size_t i = 0; i < powerUps.size(); ++i) {
+            if (powerUps[i]) { // Always check for null
+                powerUps[i]->update(deltaTime);
+                // Collision detection with player
+                if (powerUps[i]->isColliding(*player1)) {
+                    // Apply power-up effect
+                    switch (powerUps[i]->getType()) {
+                    case PowerUp::Type::EXTRA_LIFE:
+                        livesManager1->addLife();
+                        break;
+                    case PowerUp::Type::SPEED_BOOST:
+                        player1->speed += 50;
+                        break;
+                    case PowerUp::Type::RAPID_FIRE:
+                        player1->shootCooldown -= 0.01f;
+                        break;
+                    case PowerUp::Type::INVINCIBILITY:
+                        player1->isInvincible = true;
+                        player1->invincibilityTime = 0.0f;
+                        break;
+                    }
+                    delete powerUps[i];  // Delete the power-up
+                    powerUps.erase(powerUps.begin() + i);
+                    --i; // Adjust index
+                    continue; // Skip to the next power-up
+                }
+                // Remove power-up if it should be removed 
+                if (powerUps[i]->shouldRemove) {
+                    delete powerUps[i];     // Delete the power-up
+                    powerUps.erase(powerUps.begin() + i);
+                    --i; // Adjust index
+                }
+            }
+        }
+        for (size_t i = 0; i < powerUps.size(); ++i) {
+            if (powerUps[i]) { // Always check for null
+                powerUps[i]->update(deltaTime);
+                // Collision detection with player
+                if (powerUps[i]->isColliding(*player2)) {
+                    // Apply power-up effect
+                    switch (powerUps[i]->getType()) {
+                    case PowerUp::Type::EXTRA_LIFE:
+                        livesManager2->addLife();
+                        break;
+                    case PowerUp::Type::SPEED_BOOST:
+                        player2->speed += 50;
+                        break;
+                    case PowerUp::Type::RAPID_FIRE:
+                        player2->shootCooldown -= 0.01f;
+                        break;
+                    case PowerUp::Type::INVINCIBILITY:
+                        player2->isInvincible = true;
+                        player2->invincibilityTime = 0.0f;
+                        break;
+                    }
+                    delete powerUps[i];  // Delete the power-up
+                    powerUps.erase(powerUps.begin() + i);
+                    --i; // Adjust index
+                    continue; // Skip to the next power-up
+                }
+                // Remove power-up if it should be removed 
+                if (powerUps[i]->shouldRemove) {
+                    delete powerUps[i];     // Delete the power-up
+                    powerUps.erase(powerUps.begin() + i);
+                    --i; // Adjust index
+                }
+            }
+        }
+
+        // Create new alien swarm when previous is defeated
+        if (alienSwarm1->getAliens().empty())
+        {
+            alienSwarm1->increaseResetCounter(); // Increase the reset counter
+            alienSwarm1->increaseSpeed(0.1f); // Increase speed
+            alienSwarm1->reset(); // Spawn new swarm
+            alienSwarm1->increaseShootingSpeed(0.1f); // Increase shooting speed
+            alienSwarm1->increaseNumOfShooter(); // Increase number of shooters (if reset counter is 2 and the numOfShooter is less than 15)
+        }
+        if (alienSwarm2->getAliens().empty())
+        {
+            alienSwarm2->increaseResetCounter(); // Increase the reset counter
+            alienSwarm2->increaseSpeed(0.1f); // Increase speed
+            alienSwarm2->reset(); // Spawn new swarm
+            alienSwarm2->increaseShootingSpeed(0.1f); // Increase shooting speed
+            alienSwarm2->increaseNumOfShooter(); // Increase number of shooters (if reset counter is 2 and the numOfShooter is less than 15)
+        }
+
+        //check if aliens reached the bottom
+        for (Alien* alien : alienSwarm1->getAliens()) {
+            if (alien->getRect().y + alien->getRect().h >= player1->getRect().y) {
+                setGameState(GameState::GAME_OVER);
+                break;
+            }
+        }
+        for (Alien* alien : alienSwarm2->getAliens()) {
+            if (alien->getRect().y + alien->getRect().h >= player2->getRect().y) {
+                setGameState(GameState::GAME_OVER);
+                break;
+            }
+        }
+
+        // Check if player's lives is 0
+        if (livesManager1->isGameOver())
+        {
+            setGameState(GameState::GAME_OVER);
+			player1win = false;
+        }
+		if (livesManager2->isGameOver())
+		{
+			setGameState(GameState::GAME_OVER);
+			player1win = true;
+		}
+        break;
     case GameState::PAUSE:
         break;
     case GameState::GAME_OVER:
+        if (resetPlayerPosition == true) {
+            resetPlayerPosition = false;
+        }
+
+        if (initialResetSwarm == true) {
+            initialResetSwarm = false;
+        }
+
         // Reset bullets
         for (Bullet* bullet : bullets) {
             delete bullet;
@@ -335,14 +637,18 @@ void Game::update() {
             delete bullet;
         }
         enemiesBullets.clear();
-        alienSwarm->reset(); // This is so that when go from pause to menu then play again, the alien swarm will reset
-        livesManager->reset(); // The same for lives  
-        if (!scoreAdded) {
-            highScore->addScore(score->getScore());
-            highScore->save();
-            scoreAdded = true;
+        alienSwarm1->reset(); // This is so that when go from pause to menu then play again, the alien swarm will reset
+		alienSwarm2->reset(); // The same for P2 alien swarm
+        livesManager1->reset(); // The same for P1 lives  
+        livesManager2->reset(); // The same for P2 lives  
+        if (singlePlayer == true) {
+            if (!scoreAdded) {
+                highScore->addScore(score->getScore());
+                highScore->save();
+                scoreAdded = true;
+                score->reset();
+            }
         }
-        score->reset();
         break;
     }
     lastFrameTime = currentFrameTime;
@@ -362,11 +668,17 @@ void Game::render() {
 		scoreButton->render(renderer);
         quitButton->render(renderer);
         break;
-    case GameState::PLAYING:
+	case GameState::CHOOSE_MODE:
+		// Render choose mode elements
+		startBackground->render(renderer);
+		singleButton->render(renderer);
+		duoButton->render(renderer);
+        break;
+    case GameState::SINGLE:
         // Render game elements 
         gameBackground->render(renderer);
-        player->render(renderer);
-        alienSwarm->render(renderer); 
+        player1->render(renderer);
+        alienSwarm1->render(renderer); 
 		for (PowerUp* powerUp : powerUps) {
 			powerUp->render(renderer);
 		}
@@ -376,29 +688,67 @@ void Game::render() {
         for (Bullet* bullet : enemiesBullets) {
             bullet->render(renderer);
         }
-        livesManager->render(10, 10); // Render lives at (10, 10)
-        score->render(600, 10);
+        livesManager1->render(10, 10); 
+        score->render(1510, 10);
         break;
-    case GameState::PAUSE:
-        // Render pause menu
+    case GameState::DUO:
+        // Render game elements 
         gameBackground->render(renderer);
-        player->render(renderer);
-		livesManager->render(10, 10);
-        alienSwarm->render(renderer);
+        player1->render(renderer);
+		player2->render(renderer);
+        alienSwarm1->render(renderer);
+		alienSwarm2->render(renderer);
+        for (PowerUp* powerUp : powerUps) {
+            powerUp->render(renderer);
+        }
         for (Bullet* bullet : bullets) {
             bullet->render(renderer);
         }
         for (Bullet* bullet : enemiesBullets) {
             bullet->render(renderer);
         }
-        score->render(600, 10);
-        goToMenuButton->render(renderer);
+        livesManager1->render(10, 10);
+        livesManager2->render(875, 10);
+        SDL_SetRenderDrawColor(renderer, 0, 255, 255, 255);
+		SDL_RenderFillRect(renderer, border);
+        break;
+    case GameState::PAUSE:
+        // Render pause menu
+        gameBackground->render(renderer);
+        player1->render(renderer);
+		livesManager1->render(10, 10);
+        alienSwarm1->render(renderer);
+        for (PowerUp* powerUp : powerUps) {
+            powerUp->render(renderer);
+        }
+        for (Bullet* bullet : bullets) {
+            bullet->render(renderer);
+        }
+        for (Bullet* bullet : enemiesBullets) {
+            bullet->render(renderer);
+        }
+		if (singlePlayer == true) {
+            score->render(600, 10);
+		} else {
+            player2->render(renderer);
+			alienSwarm2->render(renderer);
+            livesManager2->render(875, 10);
+        }
+        SDL_SetRenderDrawColor(renderer, 0, 255, 255, 255);
+        SDL_RenderFillRect(renderer, border);
+        pauseGoToMenuButton->render(renderer);
         break;
     case GameState::GAME_OVER:
         // Render game over screen elements
         quitButton->render(renderer);
-		pauseGoToMenuButton->render(renderer);
+		goToMenuButton->render(renderer);
 		replayButton->render(renderer);
+		if (player1win == true) {
+			P1Win->render(renderer);
+		}
+		else {
+			P2Win->render(renderer);
+		}
         break;
 	case GameState::HIGHSCORE:
 		// Render highscore screen elements

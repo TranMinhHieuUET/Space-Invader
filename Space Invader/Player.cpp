@@ -1,13 +1,13 @@
 #include "Player.h"
 #include <iostream>
-#include "Game.h"
 #include "GameObjects.h"
 #include "Bullet.h"
 
-Player::Player(int x, int y, int w, int h, const std::string& texturePath, SDL_Renderer* renderer, int speed, std::vector<Bullet*>& bullets) :
-    GameObject(x, y, w, h, texturePath, renderer), speed(speed), shootCooldown(0.5f), lastShootTime(0.0f), initialX(x), initialY(y), 
-	moveDirection(0), isSpacebarDown(false), posX(static_cast<float>(x)), bullets(bullets), renderer(renderer), invincibilityTime(0.0f), isInvincible(false),
-    invincibilityDuration(2.0f), showSprite(true), flickerTimer(0.0f), flickerInterval(0.1f) {
+Player::Player(int x, int y, int w, int h, const std::string& texturePath, SDL_Renderer* renderer, int speed, std::vector<Bullet*>& bullets, 
+    SDL_Keycode leftKey, SDL_Keycode rightKey, SDL_Keycode shootKey, bool isP1, Game* game) :
+    GameObject(x, y, w, h, texturePath, renderer), speed(speed), shootCooldown(0.5f), lastShootTime(0.0f),
+	moveDirection(0), isShootKeyDown(false), posX(static_cast<float>(x)), bullets(bullets), renderer(renderer), invincibilityTime(0.0f), isInvincible(false),
+    invincibilityDuration(2.0f), showSprite(true), flickerTimer(0.0f), flickerInterval(0.1f), leftKey(leftKey), rightKey(rightKey), shootKey(shootKey), isP1(isP1), game(game) {
 }
 
 
@@ -20,15 +20,40 @@ void Player::update(float deltaTime) {
     // Convert to integer for rendering
     rect.x = static_cast<int>(posX);
 
-    // Keep within bounds (update posX too)
-    if (rect.x < 0) {
-        rect.x = 0;
-        posX = 0.0f;
+    // Keep within bounds (update posX too) (for single and duo player)
+    if (game->singlePlayer == true) {
+        if (rect.x < 0) {
+            rect.x = 0;
+            posX = 0.0f;
+        }
+        if (rect.x + rect.w > 1710) {
+            rect.x = 1710 - rect.w;
+            posX = static_cast<float>(1710 - rect.w);
+        }
     }
-    if (rect.x + rect.w > 1710) {
-        rect.x = 1710 - rect.w;
-        posX = static_cast<float>(1710 - rect.w);
+    else {
+		if (isP1 == true) {
+			if (rect.x < 0) {
+				rect.x = 0;
+				posX = 0.0f;
+			}
+			if (rect.x + rect.w > 850) {
+				rect.x = 850 - rect.w;
+				posX = static_cast<float>(850 - rect.w);
+			}
+		}
+		else {
+			if (rect.x < 850) {
+				rect.x = 850;
+				posX = 850.0f;
+			}
+			if (rect.x + rect.w > 1710) {
+				rect.x = 1710 - rect.w;
+				posX = static_cast<float>(1710 - rect.w);
+			}
+		}
     }
+    
 
     // Update invincibility timer
     if (isInvincible) {
@@ -48,14 +73,16 @@ void Player::update(float deltaTime) {
     else {
         showSprite = true;
     }
+    lastShootTime += deltaTime; // Update last shoot time
+}
 
+void Player::shoot() {
     // Handle shooting
-    if (isSpacebarDown && lastShootTime >= shootCooldown) {
-        bullets.push_back(new Bullet(rect.x + rect.w / 2 - 2, rect.y - 10, 16, 24, "Resource/bullet.png", renderer, -300)); // Negative speed for upward movement
+    if (isShootKeyDown && lastShootTime >= shootCooldown) {
+        bullets.push_back(new Bullet(rect.x + rect.w / 2 - 2, rect.y - 10, 8, 12, "Resource/bullet.png", renderer, -300)); // Negative speed for upward movement
         lastShootTime = 0.0f;
         // Play shoot sound here (using SDL_mixer)
     }
-    lastShootTime += deltaTime;
 }
 
 void Player::render(SDL_Renderer* renderer) {
@@ -65,46 +92,36 @@ void Player::render(SDL_Renderer* renderer) {
 }
 
 void Player::handleEvent(const SDL_Event& event) {
-    if (event.type == SDL_KEYDOWN || event.type == SDL_KEYUP) {
-        switch (event.key.keysym.sym) {
-        case SDLK_LEFT:
+    if (event.type == SDL_KEYDOWN || event.type == SDL_KEYUP) { // Do it this way for smooth movement
+        if (event.key.keysym.sym == leftKey) {
             if (event.type == SDL_KEYDOWN) {
                 moveDirection = -1; // Change direction to left
             }
             else { // KEYUP
                 if (moveDirection == -1) moveDirection = 0; // Change direction to 0 when left button is not pressed
             }
-            break;
-        case SDLK_RIGHT:
+        }
+        else if (event.key.keysym.sym == rightKey) {
             if (event.type == SDL_KEYDOWN) {
                 moveDirection = 1; // Change direction to right
             }
             else { // KEYUP
                 if (moveDirection == 1) moveDirection = 0; // Change direction to 0 when right button is not pressed
             }
-            break;
-        case SDLK_SPACE:
-            // Check if spacebar is pressed
+        }
+        else if (event.key.keysym.sym == shootKey) {
+            // Check if shootkey is pressed
             if (event.type == SDL_KEYDOWN) {
-                isSpacebarDown = true;
+                isShootKeyDown = true;
             }
             else {
-                isSpacebarDown = false;
+                isShootKeyDown = false;
             }
-            break;
         }
     }
 }
 
-void Player::resetPosition() {
-	rect.x = initialX;
-	rect.y = initialY;
-	posX = static_cast<float>(initialX);
-	moveDirection = 0;
-}
-
-void Player::setPosition(int x, int y) {
+void Player::setPosition(int x) {
 	rect.x = x;
-	rect.y = y;
 	posX = static_cast<float>(x);
 }

@@ -13,9 +13,12 @@ public:
     enum class ButtonType {
         START,
         QUIT,
-        CONTINUE,
+        REPLAY,
 		GO_TO_MENU,
-		SCORE
+        SINGLEPLAYER,
+        DUOPLAYER,
+		SCORE,
+        NONE
     };
     Button(int x, int y, int w, int h, const std::string& texturePath, Game* game, ButtonType type);
     ~Button();
