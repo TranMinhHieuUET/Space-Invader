@@ -18,6 +18,8 @@ public:
 	bool isInvincible; // Flag for invincibility
     float invincibilityTime;      // Timer for invincibility
 	void render(SDL_Renderer* renderer) override;
+	void resetPosition(); // Reset player position
+	void setPosition(int x, int y); // Set player position
 
 private:
     std::vector<Bullet*>& bullets; // Reference to the game's bullets

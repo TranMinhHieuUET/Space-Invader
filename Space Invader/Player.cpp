@@ -95,3 +95,16 @@ void Player::handleEvent(const SDL_Event& event) {
         }
     }
 }
+
+void Player::resetPosition() {
+	rect.x = initialX;
+	rect.y = initialY;
+	posX = static_cast<float>(initialX);
+	moveDirection = 0;
+}
+
+void Player::setPosition(int x, int y) {
+	rect.x = x;
+	rect.y = y;
+	posX = static_cast<float>(x);
+}

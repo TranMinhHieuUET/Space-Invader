@@ -251,6 +251,7 @@ void Game::update() {
                     livesManager->loseLife();
                     player->isInvincible = true;
                     player->invincibilityTime = 0.0f;
+					player->resetPosition();
                     // Increase score, play sound, etc.
                     break; // Break after a collision
                 }
