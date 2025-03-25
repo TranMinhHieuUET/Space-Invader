@@ -17,6 +17,12 @@ static int windowHeight = 980;
 Game::Game() : isRunning(false), window(nullptr), renderer(nullptr), lastFrameTime(0), deltaTime(0.0f), currentState(GameState::MENU), scoreAdded(false) {}
 
 Game::~Game() {
+    Mix_FreeChunk(shootSound);
+	Mix_FreeChunk(playerHitSound);
+	Mix_FreeChunk(alienHitSound);
+	Mix_FreeChunk(powerUpSound);
+	Mix_FreeMusic(backgroundMusic);
+	Mix_FreeMusic(menuMusic);
     delete startButton;
     delete quitButton;
     delete goToMenuButton;
@@ -67,6 +73,12 @@ bool Game::init(const char* title, int xpos, int ypos, int width, int height, bo
         std::cerr << "TTF_Init: " << TTF_GetError() << std::endl;
     } 
 
+    // Initialize SDL_mixer
+    if (Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 2048) < 0) {
+        std::cerr << "SDL_mixer could not initialize! SDL_mixer Error: " << Mix_GetError() << std::endl;
+    }
+
+
     // Create window
     Uint32 flags = fullscreen ? SDL_WINDOW_FULLSCREEN : 0;
     window = SDL_CreateWindow(title, xpos, ypos, width, height, flags);
@@ -107,20 +119,40 @@ void Game::initializeAll() {
 	
 
     // Initialize the background
-    startBackground = new Background(0, 0, windowWidth, windowHeight, "Resource/Menu_background.png", renderer);
-    gameBackground = new Background(0, 0, windowWidth, windowHeight, "Resource/background.png", renderer);
+    startBackground = new Background(0, 0, windowWidth, windowHeight, "Resource/Background/Menu_background.png", renderer);
+    gameBackground = new Background(0, 0, windowWidth, windowHeight, "Resource/Background/background.png", renderer);
+
+    // Initialize sound effects
+	shootSound = Mix_LoadWAV("Resource/Sound/Shoot.wav");
+	Mix_VolumeChunk(shootSound, 12);
+	playerHitSound = Mix_LoadWAV("Resource/Sound/Player_hit.wav");
+	Mix_VolumeChunk(playerHitSound, 12);
+	alienHitSound = Mix_LoadWAV("Resource/Sound/Alien_hit.wav");
+	Mix_VolumeChunk(alienHitSound, 12);
+	powerUpSound = Mix_LoadWAV("Resource/Sound/Power_up.wav");
+	Mix_VolumeChunk(powerUpSound, 12);
+	menuMusic = Mix_LoadMUS("Resource/Sound/Menu_music.mp3");
+	backgroundMusic = Mix_LoadMUS("Resource/Sound/Background_music.mp3");
+	Mix_VolumeMusic(30);
+    if (Mix_PlayMusic(menuMusic, -1) == -1) {
+        std::cerr << "Mix_PlayMusic error: " << Mix_GetError() << std::endl;
+    }
 
     // Initialize the buttons
-    startButton = new Button(startButtonX, menuButtonsY, buttonWidth, buttonHeight, "Resource/start_button.png", this, Button::ButtonType::START);
-    quitButton = new Button(quitButtonX, menuButtonsY, buttonWidth, buttonHeight, "Resource/quit_button.png", this, Button::ButtonType::QUIT);
-    goToMenuButton = new Button(goToMenuButtonX, menuButtonsY, buttonWidth, buttonHeight, "Resource/go_to_menu_button.png", this, Button::ButtonType::GO_TO_MENU);
-	scoreButton = new Button(scoreButtonX, menuButtonsY, buttonWidth, buttonHeight, "Resource/highscore_button.png", this, Button::ButtonType::SCORE);
-	pauseGoToMenuButton = new Button(centeredX, centeredY, buttonWidth, buttonHeight, "Resource/go_to_menu_button.png", this, Button::ButtonType::GO_TO_MENU);
-	replayButton = new Button(centeredX, menuButtonsY, buttonWidth, buttonHeight, "Resource/replay_button.png", this, Button::ButtonType::REPLAY);
-	singleButton = new Button(startButtonX, centeredY, buttonWidth, buttonHeight, "Resource/1_player.png", this, Button::ButtonType::SINGLEPLAYER);
-	duoButton = new Button(quitButtonX, centeredY, buttonWidth, buttonHeight, "Resource/2_player.png", this, Button::ButtonType::DUOPLAYER);
-	P1Win = new Button((windowWidth - 600)/2, (windowHeight - 300) / 2, 600, 300, "Resource/P1_win.png", this, Button::ButtonType::NONE);
-	P2Win = new Button((windowWidth - 600) / 2, (windowHeight - 300) / 2, 600, 300, "Resource/P2_win.png", this, Button::ButtonType::NONE);
+    startButton = new Button(startButtonX, menuButtonsY, buttonWidth, buttonHeight, "Resource/Button/start_button.png", this, Button::ButtonType::START);
+    quitButton = new Button(quitButtonX, menuButtonsY, buttonWidth, buttonHeight, "Resource/Button/quit_button.png", this, Button::ButtonType::QUIT);
+    goToMenuButton = new Button(goToMenuButtonX, menuButtonsY, buttonWidth, buttonHeight, "Resource/Button/go_to_menu_button.png", this, Button::ButtonType::GO_TO_MENU);
+	scoreButton = new Button(scoreButtonX, menuButtonsY, buttonWidth, buttonHeight, "Resource/Button/highscore_button.png", this, Button::ButtonType::SCORE);
+	pauseGoToMenuButton = new Button(centeredX, centeredY, buttonWidth, buttonHeight, "Resource/Button/go_to_menu_button.png", this, Button::ButtonType::GO_TO_MENU);
+	replayButton = new Button(centeredX, menuButtonsY, buttonWidth, buttonHeight, "Resource/Button/replay_button.png", this, Button::ButtonType::REPLAY);
+	singleButton = new Button(startButtonX, centeredY, buttonWidth, buttonHeight, "Resource/Button/1_player.png", this, Button::ButtonType::SINGLEPLAYER);
+	duoButton = new Button(quitButtonX, centeredY, buttonWidth, buttonHeight, "Resource/Button/2_player.png", this, Button::ButtonType::DUOPLAYER);
+
+	// Initialize the win screen (as button for easy handling)
+	P1Win = new Button((windowWidth - 600)/2, (windowHeight - 300) / 2, 600, 300, "Resource/Game_over/P1_win.png", this, Button::ButtonType::NONE);
+	P2Win = new Button((windowWidth - 600) / 2, (windowHeight - 300) / 2, 600, 300, "Resource/Game_over/P2_win.png", this, Button::ButtonType::NONE);
+
+	// Initialize the border for duo mode
     border = new SDL_Rect;
 	border->x = 850;
 	border->y = 0;
@@ -136,13 +168,15 @@ void Game::initializeAll() {
     if (scoreFont == nullptr) {
         std::cerr << "Renderer could not be created! SDL_Error: " << SDL_GetError() << std::endl;
     }
+
+	// Initialize score and high score
     score = new Score(gameFont, renderer);
 	highScore = new HighScore("highScore.txt", scoreFont, renderer);
 	highScore->load();
 
-    // Initialize player ship and alien and powerup
-    player1 = new Player(300, 900, 60, 60, "Resource/player1.png", renderer, 300, bullets, SDLK_a, SDLK_d, SDLK_SPACE, true, this);
-    player2 = new Player(900, 900, 60, 60, "Resource/player2.png", renderer, 300, bullets, SDLK_LEFT, SDLK_RIGHT, SDLK_KP_ENTER, false, this);
+    // Initialize player ship, alien 
+    player1 = new Player(300, 900, 60, 60, "Resource/Player/player1.png", renderer, 300, bullets, SDLK_a, SDLK_d, SDLK_SPACE, true, this);
+    player2 = new Player(900, 900, 60, 60, "Resource/Player/player2.png", renderer, 300, bullets, SDLK_LEFT, SDLK_RIGHT, SDLK_KP_ENTER, false, this);
     alienSwarm1 = new AlienSwarm(renderer, enemiesBullets, this, true);
     alienSwarm2 = new AlienSwarm(renderer, enemiesBullets, this, false);
     livesManager1 = new LivesManager(3, gameFont, renderer);
@@ -170,6 +204,7 @@ void Game::handleEvents() {
             // Handle gameplay input 
             if (event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_ESCAPE) {
                 currentState = GameState::PAUSE;
+				Mix_PauseMusic();
             }
             player1->handleEvent(event);
             break;
@@ -177,6 +212,7 @@ void Game::handleEvents() {
 			// Handle gameplay input
             if (event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_ESCAPE) {
                 currentState = GameState::PAUSE;
+                Mix_PauseMusic();
             }
             player1->handleEvent(event);
 			player2->handleEvent(event);
@@ -186,9 +222,11 @@ void Game::handleEvents() {
             if (event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_ESCAPE) {
                 if (singlePlayer == true) {
                     currentState = GameState::SINGLE;
+					Mix_ResumeMusic();
                 }
                 else {
                     currentState = GameState::DUO;
+                    Mix_ResumeMusic();
                 }
             }
             pauseGoToMenuButton->handleEvent(event);
@@ -302,7 +340,7 @@ void Game::update() {
                     bullets[i]->shouldRemove = true;
                     alienSwarm1->getAliens()[j]->shouldRemove = true;
                     score->increaseScore(10);
-                    // Increase score, play sound, etc.
+					Mix_PlayChannel(-1, alienHitSound, 0); // Play hit sound
                     break; // Break after a collision
                 }
             }
@@ -317,7 +355,7 @@ void Game::update() {
                     player1->isInvincible = true;
                     player1->invincibilityTime = 0.0f;
 					player1->setPosition(825);
-                    // Increase score, play sound, etc.
+					Mix_PlayChannel(-1, playerHitSound, 0); // Play hit sound
                     break; // Break after a collision
                 }
             }
@@ -325,7 +363,7 @@ void Game::update() {
 
         // Power-up updates and collisions
         for (size_t i = 0; i < powerUps.size(); ++i) {
-            if (powerUps[i]) { // Always check for null, even with previous checks
+            if (powerUps[i]) { // Always check for null
                 powerUps[i]->update(deltaTime);
 
                 // Collision detection with player
@@ -346,6 +384,7 @@ void Game::update() {
 							player1->invincibilityTime = 0.0f;
 							break;
                     }
+					Mix_PlayChannel(-1, powerUpSound, 0); // Play power-up sound
                     delete powerUps[i];  // Delete the power-up
                     powerUps.erase(powerUps.begin() + i);
                     --i; // Adjust index
@@ -450,7 +489,7 @@ void Game::update() {
                     }
                     bullets[i]->shouldRemove = true;
                     alienSwarm1->getAliens()[j]->shouldRemove = true;
-                    // Increase score, play sound, etc.
+                    Mix_PlayChannel(-1, alienHitSound, 0); // Play hit sound
                     break; // Break after a collision
                 }
             }
@@ -467,7 +506,7 @@ void Game::update() {
                     }
                     bullets[i]->shouldRemove = true;
                     alienSwarm2->getAliens()[j]->shouldRemove = true;
-                    // Increase score, play sound, etc.
+                    Mix_PlayChannel(-1, alienHitSound, 0); // Play hit sound
                     break; // Break after a collision
                 }
             }
@@ -482,7 +521,7 @@ void Game::update() {
                     player1->isInvincible = true;
                     player1->invincibilityTime = 0.0f;
                     player1->setPosition(397);
-                    // Increase score, play sound, etc.
+                    Mix_PlayChannel(-1, playerHitSound, 0); // Play hit sound
                     break; // Break after a collision
                 }
             }
@@ -495,7 +534,7 @@ void Game::update() {
                     player2->isInvincible = true;
                     player2->invincibilityTime = 0.0f;
                     player2->setPosition(1252);
-                    // Increase score, play sound, etc.
+                    Mix_PlayChannel(-1, playerHitSound, 0); // Play hit sound
                     break; // Break after a collision
                 }
             }
@@ -523,6 +562,7 @@ void Game::update() {
                         player1->invincibilityTime = 0.0f;
                         break;
                     }
+                    Mix_PlayChannel(-1, powerUpSound, 0); // Play power-up sound
                     delete powerUps[i];  // Delete the power-up
                     powerUps.erase(powerUps.begin() + i);
                     --i; // Adjust index
@@ -557,6 +597,7 @@ void Game::update() {
                         player2->invincibilityTime = 0.0f;
                         break;
                     }
+                    Mix_PlayChannel(-1, powerUpSound, 0); // Play power-up sound
                     delete powerUps[i];  // Delete the power-up
                     powerUps.erase(powerUps.begin() + i);
                     --i; // Adjust index
@@ -728,14 +769,14 @@ void Game::render() {
             bullet->render(renderer);
         }
 		if (singlePlayer == true) {
-            score->render(600, 10);
+            score->render(1510, 10);
 		} else {
             player2->render(renderer);
 			alienSwarm2->render(renderer);
             livesManager2->render(875, 10);
+            SDL_SetRenderDrawColor(renderer, 0, 255, 255, 255);
+            SDL_RenderFillRect(renderer, border);
         }
-        SDL_SetRenderDrawColor(renderer, 0, 255, 255, 255);
-        SDL_RenderFillRect(renderer, border);
         pauseGoToMenuButton->render(renderer);
         break;
     case GameState::GAME_OVER:
@@ -777,6 +818,7 @@ void Game::clean() {
     }
 
     // Quit SDL subsystems
+    Mix_Quit();
     TTF_Quit();
     IMG_Quit();
     SDL_Quit();

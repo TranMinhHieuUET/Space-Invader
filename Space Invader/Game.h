@@ -3,8 +3,9 @@
 
 #include <SDL.h>
 #include <SDL_image.h>
-#include <string>
+#include <SDL_mixer.h>
 #include <SDL_ttf.h>
+#include <string>
 #include "Player.h"
 #include "Background.h"
 #include "Button.h" 
@@ -50,13 +51,17 @@ public:
     SDL_Renderer* getRenderer() { return renderer; }
     bool singlePlayer = true;
     bool resetPlayerPosition = false;
+    Mix_Chunk* shootSound = nullptr;
+    Mix_Music* backgroundMusic = nullptr;
+    Mix_Music* menuMusic = nullptr;
 
 private:
+    // Required variable
     bool isRunning;
+    float deltaTime;
     SDL_Window* window;
     SDL_Renderer* renderer;
     Uint32 lastFrameTime;
-    float deltaTime;
     GameState currentState;
     Button* startButton = nullptr; 
     Button* quitButton = nullptr;
@@ -80,6 +85,9 @@ private:
     AlienSwarm* alienSwarm2 = nullptr;
     LivesManager* livesManager1 = nullptr;
     LivesManager* livesManager2 = nullptr;
+    Mix_Chunk* playerHitSound = nullptr;
+    Mix_Chunk* alienHitSound = nullptr;
+    Mix_Chunk* powerUpSound = nullptr;
     bool scoreAdded;
 	bool sizeChanged = false;
     bool player1win = false;

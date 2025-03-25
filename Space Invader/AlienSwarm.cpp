@@ -121,7 +121,7 @@ void AlienSwarm::reset() {
         for (int col = 0; col < cols; ++col) {
             int x = startX + col * (alienWidth + hPadding);
             int y = 50 + row * (alienHeight + hPadding);
-            Alien* newAlien = new Alien(x, y, alienWidth, alienHeight, "Resource/alien_spritesheet.png", renderer, 2);
+            Alien* newAlien = new Alien(x, y, alienWidth, alienHeight, "Resource/Alien/alien_spritesheet.png", renderer, 2);
             newAlien->setSpeed(currentSpeed);
             aliens.push_back(newAlien);
         }
@@ -149,7 +149,7 @@ void AlienSwarm::shoot() {
         // Create a bullet at the alien's position
         int bulletX = shooter->getRect().x + shooter->getRect().w / 2 - 10; // Center bullet
         int bulletY = shooter->getRect().y + shooter->getRect().h;
-        enemiesBullets.push_back(new Bullet(bulletX, bulletY, 20, 20, "Resource/alien_bullet.png", renderer, 400)); // Adjust size and speed
+        enemiesBullets.push_back(new Bullet(bulletX, bulletY, 20, 20, "Resource/Alien/alien_bullet.png", renderer, 400)); // Adjust size and speed
 	}
 }
 

@@ -32,16 +32,16 @@ PowerUp* PowerUp::spawnPowerUp(int x, int y, SDL_Renderer* renderer) {
         Type type = static_cast<Type>(randIndex);
         switch (type) {
 		case Type::EXTRA_LIFE:
-			return new PowerUp(x, y, 32, 32, "Resource/extra_life.png", renderer, type);
+			return new PowerUp(x, y, 32, 32, "Resource/Power_Up/extra_life.png", renderer, type);
             break;
 		case Type::SPEED_BOOST:
-			return new PowerUp(x, y, 32, 32, "Resource/speed_boost.png", renderer, type);
+			return new PowerUp(x, y, 32, 32, "Resource/Power_Up/speed_boost.png", renderer, type);
 			break;
 		case Type::RAPID_FIRE:
-			return new PowerUp(x, y, 32, 32, "Resource/rapid_fire.png", renderer, type);
+			return new PowerUp(x, y, 32, 32, "Resource/Power_Up/rapid_fire.png", renderer, type);
 			break;
 		case Type::INVINCIBILITY:
-			return new PowerUp(x, y, 32, 32, "Resource/invincibility.png", renderer, type);
+			return new PowerUp(x, y, 32, 32, "Resource/Power_Up/invincibility.png", renderer, type);
             break;
         }
     }

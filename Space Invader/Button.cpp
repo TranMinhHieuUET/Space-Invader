@@ -71,6 +71,11 @@ void Button::handleEvent(const SDL_Event& event) {
                 break;
             case ButtonType::GO_TO_MENU:
                 game->setGameState(Game::GameState::MENU); // Move from pause to menu
+                // Play menu music
+                Mix_HaltMusic(); // Stop any currently playing music
+                if (Mix_PlayMusic(game->menuMusic, -1) == -1) {
+                    std::cerr << "Mix_PlayMusic error: " << Mix_GetError() << std::endl;
+                }
                 break;
 			case ButtonType::SCORE:
 				game->setGameState(Game::GameState::HIGHSCORE); // Move from menu to score screen
@@ -86,10 +91,20 @@ void Button::handleEvent(const SDL_Event& event) {
             case ButtonType::SINGLEPLAYER:
 				game->singlePlayer = true; // Set single player mode
 				game->setGameState(Game::GameState::SINGLE); // Move from choosing mode to single player game
+                // Play game music
+                Mix_HaltMusic(); // Stop any currently playing music
+                if (Mix_PlayMusic(game->backgroundMusic, -1) == -1) {
+                    std::cerr << "Mix_PlayMusic error: " << Mix_GetError() << std::endl;
+                }
 				break;
 			case ButtonType::DUOPLAYER:
 				game->singlePlayer = false; // Set duo player mode
 				game->setGameState(Game::GameState::DUO); // Move from choosing mode to duo player game
+                // Play game music
+                Mix_HaltMusic(); // Stop any currently playing music
+                if (Mix_PlayMusic(game->backgroundMusic, -1) == -1) {
+                    std::cerr << "Mix_PlayMusic error: " << Mix_GetError() << std::endl;
+                }
 				break;
             }
         }
