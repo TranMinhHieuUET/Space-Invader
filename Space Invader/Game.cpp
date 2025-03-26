@@ -144,6 +144,7 @@ void Game::initializeAll() {
     if (Mix_PlayMusic(menuMusic, -1) == -1) {
         std::cerr << "Mix_PlayMusic error: " << Mix_GetError() << std::endl;
     }
+    currentMusic = menuMusic;
 
     // Initialize the buttons
     startButton = new Button(startButtonX, menuButtonsY, buttonWidth, buttonHeight, "Resource/Button/start_button.png", this, Button::ButtonType::START);
@@ -678,7 +679,8 @@ void Game::update() {
             if (resetPlayerPosition == true) {
                 resetPlayerPosition = false;
             }
-
+            player1->resetMovement();
+            player2->resetMovement();
             if (initialResetSwarm == true) {
                 initialResetSwarm = false;
             }

@@ -25,6 +25,7 @@ public:
 	void setPosition(int x); // Set player position
     void shoot(); // Handle shooting bullet
     void resetSpeed(); // Reset player speed
+    void resetMovement(); // Reset player movement
 
 private:
     std::vector<Bullet*>& bullets; // Reference to the game's bullets

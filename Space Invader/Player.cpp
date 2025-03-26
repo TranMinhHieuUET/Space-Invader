@@ -129,3 +129,7 @@ void Player::setPosition(int x) {
 void Player::resetSpeed() {
     speed = initialSpeed;
 }
+
+void Player::resetMovement() {
+    moveDirection = 0;
+}
