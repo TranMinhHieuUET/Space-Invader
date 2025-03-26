@@ -215,16 +215,14 @@ void Game::handleEvents() {
         case GameState::SINGLE:
             // Handle gameplay input 
             if (event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_ESCAPE) {
-                currentState = GameState::PAUSE;
-				Mix_PauseMusic();
+                setGameState(Game::GameState::PAUSE);
             }
             player1->handleEvent(event);
             break;
 		case GameState::DUO:
 			// Handle gameplay input
             if (event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_ESCAPE) {
-                currentState = GameState::PAUSE;
-                Mix_PauseMusic();
+                setGameState(Game::GameState::PAUSE);
             }
             player1->handleEvent(event);
 			player2->handleEvent(event);
@@ -273,6 +271,11 @@ void Game::update() {
             delete bullet;
         }
         enemiesBullets.clear();
+        // Reset Power-ups
+        for (PowerUp* powerUp : powerUps) {
+            delete powerUp;
+        }
+        powerUps.clear();  
         // Reset the alien swarms
         if (initialResetSwarm == true) {
             alienSwarm1->reset();
@@ -672,34 +675,38 @@ void Game::update() {
             Mix_HaltMusic();
             Mix_PlayChannel(-1, gameOverSound, 0);
             gameOver = false;
-        }
-        if (resetPlayerPosition == true) {
-            resetPlayerPosition = false;
-        }
+            if (resetPlayerPosition == true) {
+                resetPlayerPosition = false;
+            }
 
-        if (initialResetSwarm == true) {
-            initialResetSwarm = false;
-        }
-        // Clear and reset all game entities
-        for (Bullet* bullet : bullets) {
-            delete bullet;
-        }
-        bullets.clear();
-        for (Bullet* bullet : enemiesBullets) {
-            delete bullet;
-        }
-        enemiesBullets.clear();
-        alienSwarm1->reset(); 
-		alienSwarm2->reset(); 
-        livesManager1->reset(); 
-        livesManager2->reset(); 
-        // Add score if played in single player mode
-        if (singlePlayer == true) {
-            if (!scoreAdded) {
-                highScore->addScore(score->getScore());
-                highScore->save();
-                scoreAdded = true;
-                score->reset();
+            if (initialResetSwarm == true) {
+                initialResetSwarm = false;
+            }
+            // Clear and reset all game entities
+            for (Bullet* bullet : bullets) {
+                delete bullet;
+            }
+            bullets.clear();
+            for (Bullet* bullet : enemiesBullets) {
+                delete bullet;
+            }
+            for (PowerUp* powerUp : powerUps) {
+                delete powerUp;
+            }
+            powerUps.clear();
+            enemiesBullets.clear();
+            alienSwarm1->reset();
+            alienSwarm2->reset();
+            livesManager1->reset();
+            livesManager2->reset();
+            // Add score if played in single player mode
+            if (singlePlayer == true) {
+                if (!scoreAdded) {
+                    highScore->addScore(score->getScore());
+                    highScore->save();
+                    scoreAdded = true;
+                    score->reset();
+                }
             }
         }
         break;
@@ -819,6 +826,46 @@ void Game::render() {
     }
     // Update the screen
     SDL_RenderPresent(renderer);
+}
+
+void Game::setGameState(GameState newState) {
+    if (currentState == newState) return; // No change if gamestate is the same
+    GameState previousState = currentState; // Store previous state if needed
+    currentState = newState;              // Update the state
+    // Music Handling Logic 
+    switch (newState) {
+    case GameState::MENU:
+    case GameState::CHOOSE_MODE:
+    case GameState::HIGHSCORE:
+        if (currentMusic != menuMusic || Mix_PlayingMusic() == 0) { // Play menu music if not already playing
+            Mix_HaltMusic(); // Stop whatever is playing
+            if (Mix_PlayMusic(menuMusic, -1) == -1) {
+                std::cerr << "Mix_PlayMusic error (menuMusic): " << Mix_GetError() << std::endl;
+            }
+            currentMusic = menuMusic;
+        }
+        break;
+    case GameState::SINGLE:
+    case GameState::DUO:
+        if (currentMusic != backgroundMusic || Mix_PlayingMusic() == 0) { // Play game music if not already playing
+            Mix_HaltMusic(); // Stop whatever is playing
+            if (Mix_PlayMusic(backgroundMusic, -1) == -1) {
+                std::cerr << "Mix_PlayMusic error (backgroundMusic): " << Mix_GetError() << std::endl;
+            }
+            currentMusic = backgroundMusic;
+        }
+        // Resume music if coming back from pause
+        if (previousState == GameState::PAUSE) {
+            Mix_ResumeMusic();
+        }
+        break;
+    case GameState::GAME_OVER:
+        Mix_HaltMusic();
+        break;
+    case GameState::PAUSE:
+        Mix_PauseMusic();
+        break;
+    }
 }
 
 void Game::clean() {

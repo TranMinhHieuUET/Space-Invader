@@ -46,14 +46,12 @@ public:
     void render();
     void clean();
     bool running() { return isRunning; };
-    void setGameState(GameState newState) { currentState = newState; };
+    void setGameState(GameState newState);
     void setRunning(bool running) { isRunning = running; };
     SDL_Renderer* getRenderer() { return renderer; }
     bool singlePlayer = true;
     bool resetPlayerPosition = false;
     Mix_Chunk* shootSound = nullptr;
-    Mix_Music* backgroundMusic = nullptr;
-    Mix_Music* menuMusic = nullptr;
 
 private:
     // Required variables
@@ -93,6 +91,9 @@ private:
     Mix_Chunk* alienHitSound = nullptr;
     Mix_Chunk* powerUpSound = nullptr;
     Mix_Chunk* gameOverSound = nullptr;
+    Mix_Music* backgroundMusic = nullptr;
+    Mix_Music* menuMusic = nullptr;
+    Mix_Music* currentMusic = nullptr;
     bool scoreAdded;
 	bool sizeChanged = false;
     bool player1win = false;
