@@ -18,9 +18,11 @@ public:
         SINGLEPLAYER,
         DUOPLAYER,
 		SCORE,
-        NONE
+        ARROW
     };
     Button(int x, int y, int w, int h, const std::string& texturePath, Game* game, ButtonType type);
+    // Constructor for image-based buttons (ARROW)
+    Button(int x, int y, int w, int h, const std::string& normalTexturePath, const std::string& hoverTexturePath, Game* game, ButtonType type);
     ~Button();
     void render(SDL_Renderer* renderer);
     void handleEvent(const SDL_Event& event);
@@ -29,8 +31,11 @@ public:
 private:
     SDL_Rect rect; // Button position and size
     SDL_Texture* texture; // Button texture
+    SDL_Texture* normalTexture; // Normal texture (not hovered) for the arrow button
+    SDL_Texture* hoverTexture; // Hovered texture for the arrow button
     ButtonType type; // Button type 
     bool isHovered; // Track if the mouse is hovering over the button
+    bool isArrow; // Flag for arrow button
     Game* game; // Declare game so that Button declaration can use
 };
 

@@ -24,6 +24,7 @@ public:
 	void render(SDL_Renderer* renderer) override;
 	void setPosition(int x); // Set player position
     void shoot(); // Handle shooting bullet
+    void resetSpeed(); // Reset player speed
 
 private:
     std::vector<Bullet*>& bullets; // Reference to the game's bullets
@@ -41,6 +42,7 @@ private:
     SDL_Keycode shootKey;   // Key to shoot
 	bool isP1; // Flag for player 1
 	Game* game; // Declare game so that Player can use singlePlayer flag
+    int initialSpeed; // Store initial speed
 };
 
 #endif

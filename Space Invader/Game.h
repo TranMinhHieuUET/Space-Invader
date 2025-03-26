@@ -56,7 +56,7 @@ public:
     Mix_Music* menuMusic = nullptr;
 
 private:
-    // Required variable
+    // Required variables
     bool isRunning;
     float deltaTime;
     SDL_Window* window;
@@ -71,9 +71,12 @@ private:
 	Button* scoreButton = nullptr;
 	Button* replayButton = nullptr;
     Button* singleButton = nullptr;
-	Button* duoButton = nullptr;
-	Button* P1Win = nullptr;
-	Button* P2Win = nullptr;
+    Button* duoButton = nullptr;
+    Button* arrow = nullptr;
+    Background* P1Win = nullptr;
+    Background* P2Win = nullptr;
+    Background* gameTitle = nullptr;
+    Background* gameOverTitle = nullptr;
 	SDL_Rect* border = nullptr;
     Player* player1 = nullptr;
 	Player* player2 = nullptr;
@@ -81,6 +84,7 @@ private:
     TTF_Font* scoreFont = nullptr;
     Background* startBackground = nullptr;
     Background* gameBackground = nullptr;
+    Background* gameOverBackground = nullptr;
     AlienSwarm* alienSwarm1 = nullptr;
     AlienSwarm* alienSwarm2 = nullptr;
     LivesManager* livesManager1 = nullptr;
@@ -88,10 +92,13 @@ private:
     Mix_Chunk* playerHitSound = nullptr;
     Mix_Chunk* alienHitSound = nullptr;
     Mix_Chunk* powerUpSound = nullptr;
+    Mix_Chunk* gameOverSound = nullptr;
     bool scoreAdded;
 	bool sizeChanged = false;
     bool player1win = false;
     bool initialResetSwarm = false;
+    bool speedResetted = false;
+    bool gameOver = false;
     std::vector<Bullet*> bullets; 
     std::vector<Bullet*> enemiesBullets;
 	std::vector<PowerUp*> powerUps;

@@ -3,10 +3,10 @@
 #include "GameObjects.h"
 #include "Bullet.h"
 
-Player::Player(int x, int y, int w, int h, const std::string& texturePath, SDL_Renderer* renderer, int speed, std::vector<Bullet*>& bullets, 
+Player::Player(int x, int y, int w, int h, const std::string& texturePath, SDL_Renderer* renderer, int speed, std::vector<Bullet*>& bullets,
     SDL_Keycode leftKey, SDL_Keycode rightKey, SDL_Keycode shootKey, bool isP1, Game* game) :
     GameObject(x, y, w, h, texturePath, renderer), speed(speed), shootCooldown(0.5f), lastShootTime(0.0f),
-	moveDirection(0), isShootKeyDown(false), posX(static_cast<float>(x)), bullets(bullets), renderer(renderer), invincibilityTime(0.0f), isInvincible(false),
+    moveDirection(0), isShootKeyDown(false), posX(static_cast<float>(x)), bullets(bullets), renderer(renderer), invincibilityTime(0.0f), isInvincible(false), initialSpeed(speed),
     invincibilityDuration(2.0f), showSprite(true), flickerTimer(0.0f), flickerInterval(0.1f), leftKey(leftKey), rightKey(rightKey), shootKey(shootKey), isP1(isP1), game(game) {
 }
 
@@ -37,15 +37,15 @@ void Player::update(float deltaTime) {
 				rect.x = 0;
 				posX = 0.0f;
 			}
-			if (rect.x + rect.w > 850) {
-				rect.x = 850 - rect.w;
-				posX = static_cast<float>(850 - rect.w);
+			if (rect.x + rect.w > 855) {
+				rect.x = 855 - rect.w;
+				posX = static_cast<float>(855 - rect.w);
 			}
 		}
 		else {
-			if (rect.x < 850) {
-				rect.x = 850;
-				posX = 850.0f;
+			if (rect.x < 855) {
+				rect.x = 855;
+				posX = 855.0f;
 			}
 			if (rect.x + rect.w > 1710) {
 				rect.x = 1710 - rect.w;
@@ -124,4 +124,8 @@ void Player::handleEvent(const SDL_Event& event) {
 void Player::setPosition(int x) {
 	rect.x = x;
 	posX = static_cast<float>(x);
+}
+
+void Player::resetSpeed() {
+    speed = initialSpeed;
 }

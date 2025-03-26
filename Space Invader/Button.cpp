@@ -4,7 +4,7 @@
 #include "Game.h"
 
 Button::Button(int x, int y, int w, int h, const std::string& texturePath, Game* game, ButtonType type) // Button constructor
-    : rect({ x, y, w, h }), type(type), isHovered(false), texture(nullptr), game(game) { 
+    : rect({ x, y, w, h }), type(type), isHovered(false), texture(nullptr), game(game), isArrow(false), normalTexture(nullptr), hoverTexture(nullptr) {
     SDL_Surface* surface = IMG_Load(texturePath.c_str());
     if (!surface) {
         std::cerr << "Failed to load image: " << texturePath << " - " << IMG_GetError() << std::endl;
@@ -15,6 +15,27 @@ Button::Button(int x, int y, int w, int h, const std::string& texturePath, Game*
         if (!texture) {
             std::cerr << "Failed to create texture: " << SDL_GetError() << std::endl;
         }
+    }
+}
+
+// Constructor for image-based buttons (ARROW)
+Button::Button(int x, int y, int w, int h, const std::string& normalTexturePath, const std::string& hoverTexturePath, Game* game, ButtonType type)
+    : rect({ x, y, w, h }), type(type), isHovered(false), texture(nullptr), game(game), normalTexture(nullptr), hoverTexture(nullptr), isArrow(true)
+{
+    SDL_Surface* normalSurface = IMG_Load(normalTexturePath.c_str());
+    SDL_Surface* hoverSurface = IMG_Load(hoverTexturePath.c_str());
+    if (!normalSurface || !hoverSurface) {
+        std::cerr << "Failed to load image: " << " - " << IMG_GetError() << std::endl;
+    }
+    else {
+        normalTexture = SDL_CreateTextureFromSurface(game->getRenderer(), normalSurface);
+        hoverTexture = SDL_CreateTextureFromSurface(game->getRenderer(), hoverSurface);
+        SDL_FreeSurface(normalSurface);
+        SDL_FreeSurface(hoverSurface);
+        if (!normalTexture || !hoverTexture) {
+            std::cerr << "Failed to load button textures!" << std::endl;
+        }
+        texture = normalTexture; // Start with the normal texture
     }
 }
 
@@ -30,23 +51,37 @@ void Button::render(SDL_Renderer* renderer) {
     }
 
     // Hover effect
-    if (isHovered) {
-        // Save the current draw color
-        Uint8 r, g, b, a;
-        SDL_GetRenderDrawColor(renderer, &r, &g, &b, &a);
+    if (!isArrow) { // For non arrow buttons
+        if (isHovered) {
+            // Save the current draw color
+            Uint8 r, g, b, a;
+            SDL_GetRenderDrawColor(renderer, &r, &g, &b, &a);
 
-        // Set the draw color to yellow
-        SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255); // White border
+            // Set the draw color to yellow
+            SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255); // White border
 
-        // Create and draw the border
-        for (int i = 0; i < 5; i++) { // Adjust thickness 
-            SDL_Rect borderRect = { rect.x - i, rect.y - i, rect.w + 2 * i, rect.h + 2 * i };
-            SDL_RenderDrawRect(renderer, &borderRect);
+            // Create and draw the border
+            for (int i = 0; i < 5; i++) { // Adjust thickness 
+                SDL_Rect borderRect = { rect.x - i, rect.y - i, rect.w + 2 * i, rect.h + 2 * i };
+                SDL_RenderDrawRect(renderer, &borderRect);
+            }
+
+            // Reset the draw color to the original color
+            SDL_SetRenderDrawColor(renderer, r, g, b, a);
         }
-
-        // Reset the draw color to the original color
-        SDL_SetRenderDrawColor(renderer, r, g, b, a);
     }
+    else { // For arrow button
+        if (isHovered) {
+            texture = hoverTexture;
+        }
+        else {
+            texture = normalTexture;
+        }
+        if (texture) {
+            SDL_RenderCopy(renderer, texture, nullptr, &rect);
+        }
+    }
+    
 }
 
 void Button::handleEvent(const SDL_Event& event) {
@@ -106,6 +141,9 @@ void Button::handleEvent(const SDL_Event& event) {
                     std::cerr << "Mix_PlayMusic error: " << Mix_GetError() << std::endl;
                 }
 				break;
+            case ButtonType::ARROW:
+                game->setGameState(Game::GameState::MENU); // Go back to menu
+                break;
             }
         }
     }
