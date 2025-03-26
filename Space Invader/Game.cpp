@@ -749,7 +749,7 @@ void Game::render() {
         for (Bullet* bullet : enemiesBullets) {
             bullet->render(renderer);
         }
-        livesManager1->render(10, 10); 
+        livesManager1->render(100, 10); 
         score->render(1510, 10);
         break;
     case GameState::DUO:
@@ -778,7 +778,7 @@ void Game::render() {
         // Render pause menu
         gameBackground->render(renderer);
         player1->render(renderer);
-		livesManager1->render(10, 10);
+		livesManager1->render(100, 10);
         alienSwarm1->render(renderer);
         for (PowerUp* powerUp : powerUps) {
             powerUp->render(renderer);
