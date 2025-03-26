@@ -79,7 +79,7 @@ void Player::update(float deltaTime) {
 void Player::shoot() {
     // Handle shooting
     if (isShootKeyDown && lastShootTime >= shootCooldown) {
-        bullets.push_back(new Bullet(rect.x + rect.w / 2 - 2, rect.y - 10, 8, 12, "Resource/Player/bullet.png", renderer, -300)); // Negative speed for upward movement
+        bullets.push_back(new Bullet(rect.x + rect.w / 2 - 2, rect.y - 10, 8, 12, "Resource/Player/bullet.png", renderer, -350)); // Negative speed for upward movement
         lastShootTime = 0.0f;
 		Mix_PlayChannel(-1, game->shootSound, 0); // Play shoot sound
     }
