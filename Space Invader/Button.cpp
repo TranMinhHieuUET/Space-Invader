@@ -97,6 +97,7 @@ void Button::handleEvent(const SDL_Event& event) {
 
         // Handle click
         if (isHovered && event.type == SDL_MOUSEBUTTONDOWN && event.button.button == SDL_BUTTON_LEFT) {
+            Mix_PlayChannel(-1, game->buttonPressedSound, 0);
             switch (type) {
             case ButtonType::START:
                 game->setGameState(Game::GameState::CHOOSE_MODE); // Move from pause to choosing single or duo
@@ -128,6 +129,9 @@ void Button::handleEvent(const SDL_Event& event) {
 				break;
             case ButtonType::ARROW:
                 game->setGameState(Game::GameState::MENU); // Go back to menu
+                break;
+            case ButtonType::GUIDE:
+                game->setGameState(Game::GameState::GUIDE);
                 break;
             }
         }

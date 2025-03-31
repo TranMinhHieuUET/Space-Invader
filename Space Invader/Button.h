@@ -5,6 +5,7 @@
 #include <functional> // For std::function (to handle button clicks)
 #include <string>
 #include "Game.h"
+#include <SDL_mixer.h>
 
 class Game;
 
@@ -18,6 +19,7 @@ public:
         SINGLEPLAYER,
         DUOPLAYER,
 		SCORE,
+        GUIDE,
         ARROW
     };
     Button(int x, int y, int w, int h, const std::string& texturePath, Game* game, ButtonType type);

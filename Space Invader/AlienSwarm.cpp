@@ -104,8 +104,8 @@ void AlienSwarm::reset() {
     int rows, cols;
     if (game->singlePlayer == true) {
         startX = 50;
-        rows = 5;
-        cols = 10;
+        rows = 6;
+        cols = 13;
     }
     else {
         rows = 4;
@@ -154,16 +154,16 @@ void AlienSwarm::shoot() {
 }
 
 void AlienSwarm::increaseShootingSpeed(float increase) {
-	shootInterval -= increase;
+	shootInterval -= increase; // Decrease shootInterval
 }
 
 void AlienSwarm::increaseResetCounter() {
-	swarmResetCounter++;
+	swarmResetCounter++; // Increase the counter (used for increasing number of shooters)
 }
 
 void AlienSwarm::increaseNumOfShooter() {
     // Calculate number of shooters
-    if (swarmResetCounter == 2 && numOfShooter < 15) {
+    if (swarmResetCounter == 2 && numOfShooter < 15) { // Increase number of shooter every 2 wave defeated (have a maximum of 15 shooter)
         numOfShooter++;
         swarmResetCounter = 0;
     }

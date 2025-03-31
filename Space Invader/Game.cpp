@@ -1,6 +1,5 @@
 #include "Game.h"
 #include <iostream>
-#include "Utils.h"
 #include "Button.h"
 #include "Player.h"
 #include "Background.h"
@@ -14,7 +13,7 @@ static int buttonHeight = 150;
 static int windowWidth = 1710;
 static int windowHeight = 980;
 
-Game::Game() : isRunning(false), window(nullptr), renderer(nullptr), lastFrameTime(0), deltaTime(0.0f), currentState(GameState::MENU), scoreAdded(false) {}
+Game::Game() : isRunning(false), window(nullptr), renderer(nullptr), lastFrameTime(0), deltaTime(0.0f), currentState(GameState::MENU), scoreAdded(false), player1win(false) {}
 
 Game::~Game() {
     Mix_FreeChunk(shootSound);
@@ -24,6 +23,8 @@ Game::~Game() {
     Mix_FreeChunk(gameOverSound);
 	Mix_FreeMusic(backgroundMusic);
 	Mix_FreeMusic(menuMusic);
+    Mix_FreeChunk(buttonPressedSound);
+    delete gameOverQuitButton;
     delete startButton;
     delete quitButton;
     delete goToMenuButton;
@@ -34,6 +35,7 @@ Game::~Game() {
 	delete pauseGoToMenuButton;
 	delete singleButton;
 	delete duoButton;
+    delete guideButton;
     delete border;
 	delete P1Win;
 	delete P2Win;
@@ -115,10 +117,12 @@ void Game::initializeAll() {
     int centeredX = (windowWidth - buttonWidth) / 2; // Centered for button only
 	int centeredY = (windowHeight - buttonHeight) / 2; // Centered for button only
     int menuButtonsY = 750;
-    int startButtonX = centeredX - buttonWidth - 100;
-    int scoreButtonX = centeredX;
-    int quitButtonX = centeredX + buttonWidth + 100;
+    int scoreButtonX = (windowWidth / 2) - 50 - buttonWidth;
+    int guideButtonX = (windowWidth / 2) + 50;
+    int startButtonX = scoreButtonX - buttonWidth - 100;
+    int quitButtonX = guideButtonX + buttonWidth + 100;
     int goToMenuButtonX = centeredX - buttonWidth - 100;
+    int gameOverQuitButtonX = centeredX + buttonWidth + 100;
 	
 
     // Initialize the background
@@ -128,16 +132,18 @@ void Game::initializeAll() {
 
 
     // Initialize sound effects and music
+    buttonPressedSound = Mix_LoadWAV("Resource/Sound/Button_pressed.wav");
+    Mix_VolumeChunk(buttonPressedSound, 30);
 	shootSound = Mix_LoadWAV("Resource/Sound/Shoot.wav");
 	Mix_VolumeChunk(shootSound, 12);
 	playerHitSound = Mix_LoadWAV("Resource/Sound/Player_hit.wav");
-	Mix_VolumeChunk(playerHitSound, 12);
+	Mix_VolumeChunk(playerHitSound, 20);
 	alienHitSound = Mix_LoadWAV("Resource/Sound/Alien_hit.wav");
-	Mix_VolumeChunk(alienHitSound, 12);
+	Mix_VolumeChunk(alienHitSound, 20);
 	powerUpSound = Mix_LoadWAV("Resource/Sound/Power_up.wav");
 	Mix_VolumeChunk(powerUpSound, 12);
     gameOverSound = Mix_LoadWAV("Resource/Sound/Game_over.wav");
-    Mix_VolumeChunk(gameOverSound, 20);
+    Mix_VolumeChunk(gameOverSound, 30);
 	menuMusic = Mix_LoadMUS("Resource/Sound/Menu_music.mp3");
 	backgroundMusic = Mix_LoadMUS("Resource/Sound/Background_music.mp3");
 	Mix_VolumeMusic(30);
@@ -149,19 +155,22 @@ void Game::initializeAll() {
     // Initialize the buttons
     startButton = new Button(startButtonX, menuButtonsY, buttonWidth, buttonHeight, "Resource/Button/start_button.png", this, Button::ButtonType::START);
     quitButton = new Button(quitButtonX, menuButtonsY, buttonWidth, buttonHeight, "Resource/Button/quit_button.png", this, Button::ButtonType::QUIT);
+    gameOverQuitButton = new Button(gameOverQuitButtonX, menuButtonsY, buttonWidth, buttonHeight, "Resource/Button/quit_button.png", this, Button::ButtonType::QUIT);
     goToMenuButton = new Button(goToMenuButtonX, menuButtonsY, buttonWidth, buttonHeight, "Resource/Button/go_to_menu_button.png", this, Button::ButtonType::GO_TO_MENU);
 	scoreButton = new Button(scoreButtonX, menuButtonsY, buttonWidth, buttonHeight, "Resource/Button/highscore_button.png", this, Button::ButtonType::SCORE);
+    guideButton = new Button(guideButtonX, menuButtonsY, buttonWidth, buttonHeight, "Resource/Button/guide_button.png", this, Button::ButtonType::GUIDE);
 	pauseGoToMenuButton = new Button(centeredX, centeredY, buttonWidth, buttonHeight, "Resource/Button/go_to_menu_button.png", this, Button::ButtonType::GO_TO_MENU);
 	replayButton = new Button(centeredX, menuButtonsY, buttonWidth, buttonHeight, "Resource/Button/replay_button.png", this, Button::ButtonType::REPLAY);
 	singleButton = new Button(startButtonX, centeredY, buttonWidth, buttonHeight, "Resource/Button/1_player.png", this, Button::ButtonType::SINGLEPLAYER);
 	duoButton = new Button(quitButtonX, centeredY, buttonWidth, buttonHeight, "Resource/Button/2_player.png", this, Button::ButtonType::DUOPLAYER);
     arrow = new Button(50, 50, 100, 50, "Resource/Button/Arrow_1.png", "Resource/Button/Arrow_2.png", this, Button::ButtonType::ARROW);
 
-	// Initialize the win screen and game title (as background for easy handling)
+	// Initialize the win screen, guide and game title (as background for easy handling)
 	P1Win = new Background((windowWidth - 600)/2, (windowHeight - 300) / 2, 600, 300, "Resource/Title/P1_win.png", renderer);
 	P2Win = new Background((windowWidth - 600) / 2, (windowHeight - 300) / 2, 600, 300, "Resource/Title/P2_win.png", renderer);
     gameTitle = new Background((windowWidth - 800) / 2, (windowHeight - 300) / 2, 800, 250, "Resource/Title/Game_title.png", renderer);
     gameOverTitle = new Background((windowWidth - 800) / 2, 200, 800, 400, "Resource/Title/Game_over_title.png", renderer);
+    guide = new Background((windowWidth - 1600) / 2, 0, 1600, 800, "Resource/Background/Guide.png", renderer);
 
 	// Initialize the border for duo mode
     border = new SDL_Rect;
@@ -206,6 +215,7 @@ void Game::handleEvents() {
             startButton->handleEvent(event); 
             quitButton->handleEvent(event);  
 			scoreButton->handleEvent(event);
+            guideButton->handleEvent(event);
             break;
 		case GameState::CHOOSE_MODE:
 			// Handle choose mode input
@@ -244,13 +254,16 @@ void Game::handleEvents() {
         case GameState::GAME_OVER:
             // Handle game over input 
 			goToMenuButton->handleEvent(event);
-            quitButton->handleEvent(event);
+            gameOverQuitButton->handleEvent(event);
 			replayButton->handleEvent(event);
             break;
 		case GameState::HIGHSCORE:
 			// Handle highscore input
             arrow->handleEvent(event);
 			break;
+        case GameState::GUIDE:
+            arrow->handleEvent(event);
+            break;
         }
     }
 }
@@ -645,12 +658,14 @@ void Game::update() {
         //check if aliens reached the bottom
         for (Alien* alien : alienSwarm1->getAliens()) {
             if (alien->getRect().y + alien->getRect().h >= player1->getRect().y) {
+                player1win = false;
                 setGameState(GameState::GAME_OVER);
                 break;
             }
         }
         for (Alien* alien : alienSwarm2->getAliens()) {
             if (alien->getRect().y + alien->getRect().h >= player2->getRect().y) {
+                player1win = true;
                 setGameState(GameState::GAME_OVER);
                 break;
             }
@@ -729,6 +744,7 @@ void Game::render() {
         startButton->render(renderer);
 		scoreButton->render(renderer);
         quitButton->render(renderer);
+        guideButton->render(renderer);
         break;
 	case GameState::CHOOSE_MODE:
 		// Render choose mode elements
@@ -805,7 +821,7 @@ void Game::render() {
     case GameState::GAME_OVER:
         // Render game over screen elements
         gameOverBackground->render(renderer);
-        quitButton->render(renderer);
+        gameOverQuitButton->render(renderer);
 		goToMenuButton->render(renderer);
 		replayButton->render(renderer);
         if (singlePlayer == true) {
@@ -825,6 +841,12 @@ void Game::render() {
         startBackground->render(renderer);
         arrow->render(renderer);
 		highScore->render(windowWidth/2, 100, scoreFont);
+        break;
+    case GameState::GUIDE:
+        startBackground->render(renderer);
+        arrow->render(renderer);
+        guide->render(renderer);
+        break;
     }
     // Update the screen
     SDL_RenderPresent(renderer);

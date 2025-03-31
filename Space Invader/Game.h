@@ -36,7 +36,8 @@ public:
 		DUO,
         PAUSE,
         GAME_OVER,
-        HIGHSCORE
+        HIGHSCORE,
+        GUIDE
     };
     Game();
     ~Game();
@@ -52,6 +53,7 @@ public:
     bool singlePlayer = true;
     bool resetPlayerPosition = false;
     Mix_Chunk* shootSound = nullptr;
+    Mix_Chunk* buttonPressedSound = nullptr;
 
 private:
     // Required variables
@@ -63,6 +65,7 @@ private:
     GameState currentState;
     Button* startButton = nullptr; 
     Button* quitButton = nullptr;
+    Button* gameOverQuitButton = nullptr;
 	HighScore* highScore = nullptr;
     Button* goToMenuButton = nullptr; 
     Button* pauseGoToMenuButton = nullptr;
@@ -71,10 +74,12 @@ private:
     Button* singleButton = nullptr;
     Button* duoButton = nullptr;
     Button* arrow = nullptr;
+    Button* guideButton = nullptr;
     Background* P1Win = nullptr;
     Background* P2Win = nullptr;
     Background* gameTitle = nullptr;
     Background* gameOverTitle = nullptr;
+    Background* guide = nullptr;
 	SDL_Rect* border = nullptr;
     Player* player1 = nullptr;
 	Player* player2 = nullptr;
@@ -96,7 +101,7 @@ private:
     Mix_Music* currentMusic = nullptr;
     bool scoreAdded;
 	bool sizeChanged = false;
-    bool player1win = false;
+    bool player1win;
     bool initialResetSwarm = false;
     bool speedResetted = false;
     bool gameOver = false;

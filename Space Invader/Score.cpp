@@ -1,6 +1,5 @@
 #include "Score.h"
 #include <iostream>
-#include "Utils.h"
 #include <SDL_ttf.h>
 
 Score::Score(TTF_Font* font, SDL_Renderer* renderer) :
