@@ -6,13 +6,13 @@
 Button::Button(int x, int y, int w, int h, const std::string& texturePath, Game* game, ButtonType type) // Button constructor
     : rect({ x, y, w, h }), type(type), isHovered(false), texture(nullptr), game(game), isArrow(false), normalTexture(nullptr), hoverTexture(nullptr) {
     SDL_Surface* surface = IMG_Load(texturePath.c_str());
-    if (!surface) {
+    if (!surface) { // Error handling
         std::cerr << "Failed to load image: " << texturePath << " - " << IMG_GetError() << std::endl;
     }
-    else {
+    else { // Load texture
         texture = SDL_CreateTextureFromSurface(game->getRenderer(), surface);
         SDL_FreeSurface(surface);
-        if (!texture) {
+        if (!texture) { // Error handling
             std::cerr << "Failed to create texture: " << SDL_GetError() << std::endl;
         }
     }
@@ -24,15 +24,16 @@ Button::Button(int x, int y, int w, int h, const std::string& normalTexturePath,
 {
     SDL_Surface* normalSurface = IMG_Load(normalTexturePath.c_str());
     SDL_Surface* hoverSurface = IMG_Load(hoverTexturePath.c_str());
-    if (!normalSurface || !hoverSurface) {
+    if (!normalSurface || !hoverSurface) { // Error handling
         std::cerr << "Failed to load image: " << " - " << IMG_GetError() << std::endl;
     }
     else {
+        // Load 2 texture (one for when hovered, one for when not hovered)
         normalTexture = SDL_CreateTextureFromSurface(game->getRenderer(), normalSurface);
         hoverTexture = SDL_CreateTextureFromSurface(game->getRenderer(), hoverSurface);
         SDL_FreeSurface(normalSurface);
         SDL_FreeSurface(hoverSurface);
-        if (!normalTexture || !hoverTexture) {
+        if (!normalTexture || !hoverTexture) { // Error handling
             std::cerr << "Failed to load button textures!" << std::endl;
         }
         texture = normalTexture; // Start with the normal texture
@@ -46,10 +47,10 @@ Button::~Button() { // Button destructor
 }
 
 void Button::render(SDL_Renderer* renderer) {
+    // Render the button
     if (texture) {
         SDL_RenderCopy(renderer, texture, nullptr, &rect);
     }
-
     // Hover effect
     if (!isArrow) { // For non arrow buttons
         if (isHovered) {
@@ -72,10 +73,10 @@ void Button::render(SDL_Renderer* renderer) {
     }
     else { // For arrow button
         if (isHovered) {
-            texture = hoverTexture;
+            texture = hoverTexture; // Set texture to hovered texture
         }
         else {
-            texture = normalTexture;
+            texture = normalTexture; // Set texture to normal texture
         }
         if (texture) {
             SDL_RenderCopy(renderer, texture, nullptr, &rect);
@@ -90,7 +91,7 @@ void Button::handleEvent(const SDL_Event& event) {
         int mouseX, mouseY;
         SDL_GetMouseState(&mouseX, &mouseY);
 
-        // Check if mouse is over the button
+        // Check if mouse is hovering the button
         bool wasHovered = isHovered;
         isHovered = (mouseX >= rect.x && mouseX <= rect.x + rect.w &&
             mouseY >= rect.y && mouseY <= rect.y + rect.h);
@@ -131,7 +132,7 @@ void Button::handleEvent(const SDL_Event& event) {
                 game->setGameState(Game::GameState::MENU); // Go back to menu
                 break;
             case ButtonType::GUIDE:
-                game->setGameState(Game::GameState::GUIDE);
+                game->setGameState(Game::GameState::GUIDE); // Go to guide menu
                 break;
             }
         }

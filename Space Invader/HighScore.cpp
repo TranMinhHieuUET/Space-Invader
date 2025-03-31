@@ -16,7 +16,7 @@ HighScore::~HighScore() {
 
 bool HighScore::load() {
     std::ifstream file(filename);
-    if (!file.is_open()) {
+    if (!file.is_open()) { // Error handling
         std::cerr << "HighScore: Could not open file for loading: " << filename << std::endl;
         return false; 
     }
@@ -44,12 +44,12 @@ bool HighScore::load() {
 
 bool HighScore::save() {
     std::ofstream file(filename);
-    if (!file.is_open()) {
+    if (!file.is_open()) { // Error handling
         std::cerr << "HighScore: Could not open file for saving: " << filename << std::endl;
         return false;
     }
 
-    for (int score : scores) {
+    for (int score : scores) { // Save score into txt file
         file << score << "\n";
     }
 
@@ -72,7 +72,7 @@ void HighScore::render(int x, int y, TTF_Font* font) const {
     const int lineHeight = TTF_FontHeight(font) + 10; // Use FontHeight for spacing
     SDL_Color White = { 255, 255, 255, 255 };
 
-    // --- Render "HIGH SCORE" Title (Centered) ---
+    //  Render "HIGH SCORE" Title (Centered) 
     SDL_Surface* titleSurface = TTF_RenderText_Solid(font, "HIGH SCORE", White);
     if (!titleSurface) {
         std::cerr << "HighScore::render(): TTF_RenderText_Solid (title) failed: " << TTF_GetError() << std::endl;
@@ -96,7 +96,7 @@ void HighScore::render(int x, int y, TTF_Font* font) const {
         }
     }
 
-    // --- Render Scores ---
+    // Render Scores
     for (size_t i = 0; i < scores.size(); ++i) {
         std::stringstream ss;
         ss << i + 1 << "   " << scores[i];

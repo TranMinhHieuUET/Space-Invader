@@ -31,14 +31,14 @@ private:
     std::vector<Alien*> aliens;
     std::vector<Bullet*>& enemiesBullets;
     SDL_Renderer* renderer; 
-    int horizontalDirection;
+    int horizontalDirection; // 1 for right, -1 for left
     int moveDownDistance;
     float speedMultiplier;
     float baseAlienSpeed;     
     float timeSinceLastShot;
     float shootInterval;
-	int swarmResetCounter;
-    int numOfShooter;
+	int swarmResetCounter; // Counter used for increasing number of shooter every 2 wave
+    int numOfShooter; // Number of alien shooting at each interval
     Game* game;
 	bool isP1;
 };

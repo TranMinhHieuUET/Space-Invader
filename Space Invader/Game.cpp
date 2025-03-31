@@ -179,7 +179,7 @@ void Game::initializeAll() {
 	border->w = 10;
 	border->h = windowHeight;
 
-    // Initialize font, high score class and score counter
+    // Initialize font for high score class and score counter
     gameFont = TTF_OpenFont("Resource/ARCADECLASSIC.ttf", 28);
     if (gameFont == nullptr) {
         std::cerr << "Renderer could not be created! SDL_Error: " << SDL_GetError() << std::endl;
@@ -207,7 +207,7 @@ void Game::handleEvents() {
     SDL_Event event;
     while (SDL_PollEvent(&event)) {
         if (event.type == SDL_QUIT) {
-            isRunning = false;
+            isRunning = false; // Quit the game
         }
         switch (currentState) {
         case GameState::MENU:
@@ -656,14 +656,14 @@ void Game::update() {
             alienSwarm2->increaseNumOfShooter(); // Increase number of shooters (if reset counter is 2 and the numOfShooter is less than 15)
         }
         //check if aliens reached the bottom
-        for (Alien* alien : alienSwarm1->getAliens()) {
+        for (Alien* alien : alienSwarm1->getAliens()) { // Check alien swarm for player 1 side
             if (alien->getRect().y + alien->getRect().h >= player1->getRect().y) {
                 player1win = false;
                 setGameState(GameState::GAME_OVER);
                 break;
             }
         }
-        for (Alien* alien : alienSwarm2->getAliens()) {
+        for (Alien* alien : alienSwarm2->getAliens()) { // Check alien swarm for player 2 side
             if (alien->getRect().y + alien->getRect().h >= player2->getRect().y) {
                 player1win = true;
                 setGameState(GameState::GAME_OVER);
@@ -687,10 +687,12 @@ void Game::update() {
     case GameState::PAUSE:
         break;
     case GameState::GAME_OVER:
-        if (gameOver == true) {
+        if (gameOver == true) { // Use game over flag to do these only once
+            // Stop game music and player game over sound effect
             Mix_HaltMusic();
             Mix_PlayChannel(-1, gameOverSound, 0);
             gameOver = false;
+            // Resetting for replay
             if (resetPlayerPosition == true) {
                 resetPlayerPosition = false;
             }
@@ -843,6 +845,7 @@ void Game::render() {
 		highScore->render(windowWidth/2, 100, scoreFont);
         break;
     case GameState::GUIDE:
+        // Render guide menu element
         startBackground->render(renderer);
         arrow->render(renderer);
         guide->render(renderer);
@@ -854,7 +857,7 @@ void Game::render() {
 
 void Game::setGameState(GameState newState) {
     if (currentState == newState) return; // No change if gamestate is the same
-    GameState previousState = currentState; // Store previous state if needed
+    GameState previousState = currentState; // Store previous state
     currentState = newState;              // Update the state
     // Music Handling Logic 
     switch (newState) {

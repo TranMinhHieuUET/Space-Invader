@@ -56,17 +56,18 @@ public:
     Mix_Chunk* buttonPressedSound = nullptr;
 
 private:
-    // Required variables
-    bool isRunning;
-    float deltaTime;
+    // Declare all variables
+    bool isRunning; // Flag to check if game is running
+    float deltaTime; // Variable for smooth game update
     SDL_Window* window;
     SDL_Renderer* renderer;
     Uint32 lastFrameTime;
     GameState currentState;
+    HighScore* highScore = nullptr;
+    // All ingame button
     Button* startButton = nullptr; 
     Button* quitButton = nullptr;
     Button* gameOverQuitButton = nullptr;
-	HighScore* highScore = nullptr;
     Button* goToMenuButton = nullptr; 
     Button* pauseGoToMenuButton = nullptr;
 	Button* scoreButton = nullptr;
@@ -75,19 +76,20 @@ private:
     Button* duoButton = nullptr;
     Button* arrow = nullptr;
     Button* guideButton = nullptr;
+    // Ingame background
     Background* P1Win = nullptr;
     Background* P2Win = nullptr;
     Background* gameTitle = nullptr;
     Background* gameOverTitle = nullptr;
     Background* guide = nullptr;
-	SDL_Rect* border = nullptr;
+    Background* startBackground = nullptr;
+    Background* gameBackground = nullptr;
+    Background* gameOverBackground = nullptr;
+	SDL_Rect* border = nullptr; // Border for duo mode
     Player* player1 = nullptr;
 	Player* player2 = nullptr;
     TTF_Font* gameFont = nullptr;
     TTF_Font* scoreFont = nullptr;
-    Background* startBackground = nullptr;
-    Background* gameBackground = nullptr;
-    Background* gameOverBackground = nullptr;
     AlienSwarm* alienSwarm1 = nullptr;
     AlienSwarm* alienSwarm2 = nullptr;
     LivesManager* livesManager1 = nullptr;

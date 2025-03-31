@@ -100,14 +100,14 @@ void AlienSwarm::reset() {
     float currentSpeed = baseAlienSpeed * speedMultiplier; 
 
     // Create new aliens
-    int startX;
-    int rows, cols;
-    if (game->singlePlayer == true) {
+    int startX; // Starting X position
+    int rows, cols; // Number of columns and rows
+    if (game->singlePlayer == true) { // Spawn for single player
         startX = 50;
         rows = 6;
         cols = 13;
     }
-    else {
+    else { // Spawn for duo player
         rows = 4;
         cols = 9;
 		if (isP1 == true) {
@@ -117,8 +117,9 @@ void AlienSwarm::reset() {
 			startX = 855;
 		}
     }
-    for (int row = 0; row < rows; ++row) {
+    for (int row = 0; row < rows; ++row) { // Spawn each alien
         for (int col = 0; col < cols; ++col) {
+            // Calculate alien position
             int x = startX + col * (alienWidth + hPadding);
             int y = 50 + row * (alienHeight + hPadding);
             Alien* newAlien = new Alien(x, y, alienWidth, alienHeight, "Resource/Alien/alien_spritesheet.png", renderer, 2);
@@ -126,7 +127,7 @@ void AlienSwarm::reset() {
             aliens.push_back(newAlien);
         }
     }
-        
+    // Set initial direction
     horizontalDirection = 1;
 }
 
